@@ -1,36 +1,13 @@
-# vim: set filetype=sh :
-
-rule star_create_index:
-    """
-    Create genome index for reference genome (STAR).
-    """
-    input:
-        index="%s" % (config["star-index"]),
-        fasta="%s" % (config["genome"]),
-        annot="%s" % (config["annot"])
-    output:
-        "%s/chrName.txt" % (config["star-index"])
-    log:
-        "%s/logs/STAR/createIndex.log" % (config["project-folder"])
-    benchmark:
-        "%s/benchmark/STAR/createIndex.benchmark.tsv" % (config["project-folder"])
-    conda: "../envs/star.yaml"
-    threads: lambda cores: cpu_count()
-    shell:"""
-        echo "Number of threads used:" {threads}
-        STAR --runThreadN {threads} --runMode genomeGenerate --genomeDir {input.index} --genomeFastaFiles {input.fasta} --sjdbGTFfile {input.annot} --sjdbOverhang 49 2> {log}
-    """
-    
 rule cutadapt_trim_reads:
     """
     Trim adapters and low quality reads (CUTADAPT).
     """
     input:
-        ["%s/%s/FASTQ/{samples}_1.fastq.gz" % (config["project-folder"], config["species"]),
-         "%s/%s/FASTQ/{samples}_2.fastq.gz" % (config["project-folder"], config["species"])]
+        ["%s/FASTQ/CONCATENATED/{samples}_R1.merged.fastq.gz" % (config["project-folder"], config["species"]),
+         "%s/FASTQ/CONCATENATED/{samples}_R2.merged.fastq.gz" % (config["project-folder"], config["species"])]
     output:
-        first="%s/%s/cutadapt/{samples}_cutadapt_R1.fastq.gz" % (config["project-folder"], config["species"]),
-        second="%s/%s/cutadapt/{samples}_cutadapt_R2.fastq.gz" % (config["project-folder"], config["species"])
+        first="%s/FASTQ/TRIMMED/{samples}_R1.trimmed.fastq.gz" % (config["project-folder"]),
+        second="%s/FASTQ/TRIMMED/{samples}_R2.trimmed.fastq.gz" % (config["project-folder"])
     params:
         phread_score=config["params"]["cutadapt"]["phread_score"],
         adapter_file_R1=config["params"]["cutadapt"]["adapter_R1"],
