@@ -14,14 +14,36 @@ rule star_create_index:
         "%s/logs/STAR/createIndex.log" % (config["project-folder"])
     benchmark:
         "%s/benchmark/STAR/createIndex.benchmark.tsv" % (config["project-folder"])
-    conda: "../envs/star.yaml"
-    threads: lambda cores: cpu_count()
+    threads:20
+    params:
+       overhang=config["params"]["star"]["overhang"]
+    singularity: "docker://dceoy/star:latest"
     shell:"""
         echo "Number of threads used:" {threads}
-        STAR --runThreadN {threads} --runMode genomeGenerate --genomeDir {input.index} --genomeFastaFiles {input.fasta} --sjdbGTFfile {input.annot} --sjdbOverhang 49 2> {log}
+        STAR --runThreadN {threads} --runMode genomeGenerate --genomeDir {input.index} --genomeFastaFiles {input.fasta} --sjdbGTFfile {input.annot} --sjdbOverhang {params.overhang} 2> {log}
+    """
+
+rule rsem_create_index:
+    """
+    Create Genome Index (RSEM).
+    """
+    input:
+        fasta="%s" % (config["genome"]),
+        annot="%s" % (config["annot"])
+    output:
+        directory("%s/Reference/RSEM/" % (config["project-folder"]))
+    log:
+        "%s/logs/RSEM/create_index.log" % (config["project-folder"])
+    benchmark:
+        "%s/benchmark/RSEM/create_index.benchmark.tsv" % (config["project-folder"])
+    threads: 20
+    singularity: "docker://biocontainers/rsem:v1.3.1dfsg-1-deb_cv1"
+    shell:"""
+       mkdir -p {output}
+       rsem-prepare-reference -p {threads} --gtf {input.annot} --star {input.fasta} {output} &> {log}
     """
     
-rule Step0_Concatenate_lanes:
+rule Concatenate_lanes:
     """
     Concatenate the demultiplexed fastq files (BASH).
     """
@@ -29,8 +51,8 @@ rule Step0_Concatenate_lanes:
       R1=expand("%s/FASTQ/RAW/{rawsamples}_R1_001.fastq.gz" % (config["project-folder"]), rawsamples=rawsamples),
       R2=expand("%s/FASTQ/RAW/{rawsamples}_R2_001.fastq.gz" % (config["project-folder"]), rawsamples=rawsamples)
     output:
-      R1="%s/FASTQ/CONCATENATED/{samples}_R1.merged.fastq.gz" % (config["project-folder"]),
-      R2="%s/FASTQ/CONCATENATED/{samples}_R2.merged.fastq.gz" % (config["project-folder"])
+      R1="%s/FASTQ/CONCATENATED/{samples}_R1.fastq.gz" % (config["project-folder"]),
+      R2="%s/FASTQ/CONCATENATED/{samples}_R2.fastq.gz" % (config["project-folder"])
     log:
         "%s/logs/Concatenate/catFastq_{samples}.log" % (config["project-folder"])
     benchmark:
