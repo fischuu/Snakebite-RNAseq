@@ -49,9 +49,11 @@ rule rsem_create_index:
     input:
         fasta="%s" % (config["genome"]),
         annot="%s" % (config["annot"]),
-        directory("%s/Reference/RSEM" % (config["project-folder"]))
+        dir="%s/Reference/RSEM" % (config["project-folder"])
     output:
         #directory("%s/Reference/RSEM" % (config["project-folder"]))
+    params:
+      out="%s/Reference/RSEM" % (config["project-folder"])
     log:
         "%s/logs/RSEM/create_index.log" % (config["project-folder"])
     benchmark:
@@ -59,7 +61,7 @@ rule rsem_create_index:
     threads: 20
     singularity: "docker://biocontainers/rsem:v1.3.1dfsg-1-deb_cv1"
     shell:"""
-       rsem-prepare-reference -p {threads} --gtf {input.annot} --star {input.fasta} {output} &> {log}
+       rsem-prepare-reference -p {threads} --gtf {input.annot} --star {input.fasta} {params.out} &> {log}
     """
     
 rule Concatenate_lanes:
