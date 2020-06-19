@@ -22,7 +22,7 @@ rule all:
     input:
       # Step1-Preparations
         "%s/chrName.txt" % (config["star-index"]),
-        "%s/Reference/RSEM/" % (config["project-folder"]),
+        "%s/Reference/RSEM" % (config["project-folder"]),
         expand("%s/FASTQ/CONCATENATED/{samples}_R1.fastq.gz" % (config["project-folder"]), samples=samples),
         expand("%s/FASTQ/CONCATENATED/{samples}_R2.fastq.gz" % (config["project-folder"]), samples=samples),
       # Step2-Preprocessing

@@ -23,7 +23,7 @@ rule star_create_index:
         STAR --runThreadN {threads} --runMode genomeGenerate --genomeDir {input.index} --genomeFastaFiles {input.fasta} --sjdbGTFfile {input.annot} --sjdbOverhang {params.overhang} 2> {log}
     """
 
-rule rsem_create_index:
+rule prepare_rsem_create_index:
     """
     Create Genome Index (RSEM).
     """
@@ -31,7 +31,27 @@ rule rsem_create_index:
         fasta="%s" % (config["genome"]),
         annot="%s" % (config["annot"])
     output:
-        directory("%s/Reference/RSEM/" % (config["project-folder"]))
+        directory("%s/Reference/RSEM" % (config["project-folder"]))
+    log:
+        "%s/logs/RSEM/create_index.log" % (config["project-folder"])
+    benchmark:
+        "%s/benchmark/RSEM/create_index.benchmark.tsv" % (config["project-folder"])
+    threads: 1
+    shell:"""
+       mkdir -p {output}
+    """
+
+
+rule rsem_create_index:
+    """
+    Create Genome Index (RSEM).
+    """
+    input:
+        fasta="%s" % (config["genome"]),
+        annot="%s" % (config["annot"]),
+        directory("%s/Reference/RSEM" % (config["project-folder"]))
+    output:
+        #directory("%s/Reference/RSEM" % (config["project-folder"]))
     log:
         "%s/logs/RSEM/create_index.log" % (config["project-folder"])
     benchmark:
@@ -39,7 +59,6 @@ rule rsem_create_index:
     threads: 20
     singularity: "docker://biocontainers/rsem:v1.3.1dfsg-1-deb_cv1"
     shell:"""
-       mkdir -p {output}
        rsem-prepare-reference -p {threads} --gtf {input.annot} --star {input.fasta} {output} &> {log}
     """
     

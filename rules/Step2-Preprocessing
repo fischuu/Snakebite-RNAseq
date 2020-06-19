@@ -3,15 +3,14 @@ rule cutadapt_trim_reads:
     Trim adapters and low quality reads (CUTADAPT).
     """
     input:
-        ["%s/FASTQ/CONCATENATED/{samples}_R1.fastq.gz" % (config["project-folder"]),
-         "%s/FASTQ/CONCATENATED/{samples}_R2.fastq.gz" % (config["project-folder"])]
+        fastq=["%s/FASTQ/CONCATENATED/{samples}_R1.fastq.gz" % (config["project-folder"]),
+               "%s/FASTQ/CONCATENATED/{samples}_R2.fastq.gz" % (config["project-folder"])],
+         adapter=config["params"]["cutadapt"]["adapter"]
     output:
         first="%s/FASTQ/TRIMMED/{samples}_R1.trimmed.fastq.gz" % (config["project-folder"]),
         second="%s/FASTQ/TRIMMED/{samples}_R2.trimmed.fastq.gz" % (config["project-folder"])
     params:
         phread_score=config["params"]["cutadapt"]["phread_score"],
-        adapter_file_R1=config["params"]["cutadapt"]["adapter"],
-        adapter_file_R2=config["params"]["cutadapt"]["adapter"],
         pair_filter=config["params"]["cutadapt"]["pair_filter"],
         min_length=config["params"]["cutadapt"]["min_length"]
     log:
@@ -19,7 +18,7 @@ rule cutadapt_trim_reads:
     benchmark:
         "%s/benchmark/cutadapt.{samples}.benchmark.tsv" % (config["project-folder"])
     threads: 1
-    singularity: "docker://biocontainers/cutadapt:v1.18-1-deb_cv1"
+    singularity: "docker://kfdrc/cutadapt:latest"
     shell:"""
         output_dir=$(dirname {output.first})
         [ ! -d \"$output_dir\" ] && mkdir -p $output_dir
@@ -40,5 +39,7 @@ rule cutadapt_trim_reads:
 
       	printf \"Removing low quality reads and Illumina adapter from the reads\\n\"
 
-      	cutadapt -q {params.phread_score} -a file:{params.adapter_file_R1} -A file:{params.adapter_file_R2} -o {output.first} -p {output.second} --minimum-length={params.min_length} --pair-filter={params.pair_filter} {input} > {log} 2>&1
+        head {input.adapter}
+
+      	cutadapt -q {params.phread_score} -a file:{input.adapter} -A file:{input.adapter} -o {output.first} -p {output.second} --minimum-length={params.min_length} --pair-filter={params.pair_filter} {input.fastq} > {log} 2>&1
 	"""

@@ -4,7 +4,7 @@ rule rsem_calculate_expressions:
     """
     input:
         bam="%s/BAM/{samples}/{samples}_Aligned.toTranscriptome.out.bam" % (config["project-folder"]),
-        ref=directory("%s/Reference/RSEM/" % (config["project-folder"]))
+        ref=directory("%s/Reference/RSEM" % (config["project-folder"]))
     output:
         "%s/RSEM/{samples}.genes.results" % (config["project-folder"]),
     log:
