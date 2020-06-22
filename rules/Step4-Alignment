@@ -19,7 +19,7 @@ rule star_map_reads:
     params:
         index=config["star-index"],
         annotation=config["annot"]
-    singularity: "docker://dceoy/star:latest"
+    singularity: config["singularity"]["star"]
     shell:"""
         mkdir -p {output.dir};
 

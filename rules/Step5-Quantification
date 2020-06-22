@@ -4,7 +4,7 @@ rule rsem_calculate_expressions:
     """
     input:
         bam="%s/BAM/{samples}/{samples}_Aligned.toTranscriptome.out.bam" % (config["project-folder"]),
-        ref=directory("%s/Reference/RSEM" % (config["project-folder"]))
+        index="%s/Reference/RSEM.chrlist" % (config["project-folder"])
     output:
         "%s/RSEM/{samples}.genes.results" % (config["project-folder"]),
     log:
@@ -12,12 +12,13 @@ rule rsem_calculate_expressions:
     benchmark:
         "%s/benchmark/RSEM/rsem_expr.{samples}.benchmark.tsv" % (config["project-folder"])
     threads: 20
-    singularity: "docker://biocontainers/rsem:v1.3.1dfsg-1-deb_cv1"
+    singularity: config["singularity"]["rsem"]
     params:
+         rsemindex="%s/Reference/RSEM" % (config["project-folder"]),
          outfolder="%s/RSEM" % (config["project-folder"])
     shell:"""
          mkdir -p {params.outfolder}
-         rsem-calculate-expression --alignments {input.bam} -p 12 --fragment-length-mean 75 {input.ref} {wildcards.samples} &> {log}
+         rsem-calculate-expression --alignments {input.bam} -p 12 --fragment-length-mean 75 {params.rsemindex} {wildcards.samples} &> {log}
          
          mv {wildcards.samples}* {params.outfolder}         
     """
