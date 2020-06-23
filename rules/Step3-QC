@@ -13,7 +13,7 @@ rule fastqc_quality_control_raw_data:
         R2="%s/logs/FASTQC/fastqc_raw_R2.{rawsamples}.log" % (config["project-folder"])
     benchmark:
         "%s/benchmark/FASTQC/fastqc_raw_R1.{rawsamples}.benchmark.tsv" % (config["project-folder"])
-    threads: 20
+    threads: 10
     params:
         outfolder="%s/QC/RAW/" % (config["project-folder"])
     singularity: "docker://singlecellpipeline/fastqc:v0.0.2"

@@ -1,0 +1,58 @@
+# vim: set filetype=sh :
+
+rule transcriptome_assembly_stringtie:
+    """
+    Transcript assembly (StringTie).
+    """
+    input:
+        bam="%s/BAM/{samples}.bam" % (config["project-folder"]),
+        annotation=config["annot"]
+    output:
+        "%s/Stringtie/{samples}.stringtie.gtf" % (config["project-folder"])
+    log:
+        "%s/logs/stringtie.{samples}.log" % (config["project-folder"])
+    benchmark:
+        "%s/benchmark/stringtie.{samples}.benchmark.tsv" % (config["project-folder"])
+    threads: 20
+    singularity: config["singularity"]["stringtie"]
+    shell:"""
+       stringtie {input.bam} -p {threads} -G {input.annotation} -v -o {output} 2> {log};
+    """
+
+rule compose_merge:
+    """
+    collect gtf files of all samples in one text file
+    """
+    input:
+       files=expand("%s/Stringtie/{sample}.stringtie.gtf" % (config["project-folder"]), sample=samples)
+    output:
+       txt="%s/Stringtie/stringtie_gtfs.txt" % (config["project-folder"])
+    log:
+        "%s/logs/compose_merge.log" % (config["project-folder"])
+    params:
+       folder="%s/Stringtie/" % (config["project-folder"]),
+       pipe=config["pipeline-folder"]
+    shell:"""
+       {params.pipe}/scripts/composeMerge.sh {params.folder} {output.txt} &> {log}
+    """
+
+rule merge_samples:
+    """
+    Merge the gtf files (stringtie merge).
+    """
+    input:
+        gtfs="%s/Stringtie/stringtie_gtfs.txt" % (config["project-folder"]),
+        annotation=config["annot"]
+    output:
+        "%s/Stringtie/merged_STRG.gtf" % (config["project-folder"])
+    params:
+        tpm=config["params"]["stringtie"]["tpm"]
+    log:
+        "%s/logs/stringtiemerge.log" % (config["project-folder"])
+    benchmark:
+        "%s/benchmark/stringtiemerge.benchmark.tsv" % (config["project-folder"])
+    threads: 20
+    singularity: config["singularity"]["stringtie"]
+    shell:"""
+        stringtie --merge -G {input.annotation} -F 0 -T {params.tpm} -o {output} {input.gtfs} 2> {log};
+    """

@@ -26,10 +26,10 @@ rsem_create_index:
 # Step2 - Preprocessing
 ################################################################################
  
-cutadapt_trim_reads:
-    job-name: cutadapt
+fastp_trim_reads:
+    job-name: fastp
     time: 01:00:00
-    cpus-per-task: 1 
+    cpus-per-task: 10
     
 # Step3 - QC
 ################################################################################
@@ -71,7 +71,20 @@ star_map_reads:
     time: 04:00:00
     cpus-per-task: 20
     
-# Step5 - Quantification
+# Step5 - TranscriptomeAssembly
+################################################################################
+
+transcriptome_assembly_stringtie:    
+    job-name: stringtie
+    time: 04:00:00
+    cpus-per-task: 20
+    
+merge_samples:
+    job-name: mergSTRGeSamples
+    time: 04:00:00
+    cpus-per-task: 20
+    
+# Step6 - Quantification
 ################################################################################
 
 rsem_calculate_expressions:
@@ -81,5 +94,10 @@ rsem_calculate_expressions:
 
 featureCounts_quantify:
     job-name: fc_quantify
+    time: 02:00:00
+    cpus-per-task: 20
+
+featureCounts_quantify_merged:
+    job-name: fc_quantify_merged
     time: 02:00:00
     cpus-per-task: 20

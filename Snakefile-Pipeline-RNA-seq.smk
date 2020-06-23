@@ -38,9 +38,12 @@ rule all:
         "%s/QC/TRIMMED/multiqc_R2/" % (config["project-folder"]),
       # Step4-Alignment
         expand("%s/BAM/{samples}.bam" % (config["project-folder"]), samples=samples),
-      # Step5-Quantification
+      # Step5-TranscriptomeAssembly
+        "%s/Stringtie/merged_STRG.gtf" % (config["project-folder"]),
+      # Step6-Quantification
         expand("%s/RSEM/{samples}.genes.results" % (config["project-folder"]), samples=samples),
-        expand("%s/FeatureCounts/{samples}_fc.txt" % (config["project-folder"]), samples=samples),
+        expand("%s/FeatureCounts/Annot/{samples}_fc.txt" % (config["project-folder"]), samples=samples),
+        expand("%s/FeatureCounts/Stringtie/{samples}_fc.txt" % (config["project-folder"]), samples=samples),
 
 ### setup report #####
 report: "report/workflow.rst"
@@ -50,4 +53,5 @@ include: "rules/Step1-Preparations"
 include: "rules/Step2-Preprocessing"
 include: "rules/Step3-QC"
 include: "rules/Step4-Alignment"
-include: "rules/Step5-Quantification"
+include: "rules/Step5-TranscriptomeAssembly"
+include: "rules/Step6-Quantification"
