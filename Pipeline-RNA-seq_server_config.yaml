@@ -89,15 +89,15 @@ merge_samples:
 
 rsem_calculate_expressions:
     job-name: rsem_quant
-    time: 0-04:00:00
+    time: 0-06:00:00
     cpus-per-task: 20
 
 featureCounts_quantify:
     job-name: fc_quantify
-    time: 02:00:00
+    time: 06:00:00
     cpus-per-task: 20
 
 featureCounts_quantify_merged:
     job-name: fc_quantify_merged
-    time: 02:00:00
+    time: 06:00:00
     cpus-per-task: 20
