@@ -1,0 +1,27 @@
+project-folder: "/scratch/project_2002561/MastitisChallenge/RNASeq-Analysis"                                               # Path to the project folder
+pipeline-folder: "/scratch/project_2002561/pipeline"
+pipeline-config: "/scratch/project_2002561/MastitisChallenge/RNASeq-Analysis/Pipeline-RNA-seq_config.yaml"
+rawsamples: "/scratch/project_2002561/MastitisChallenge/RNASeq-Analysis/rawsamples"                                               # Path to the sample file
+samples: "/scratch/project_2002561/MastitisChallenge/RNASeq-Analysis/samples"                                               # Path to the sample file
+genome: "/scratch/project_2002561/MastitisChallenge/RNASeq-Analysis/Reference/Bos_taurus.ARS-UCD1.2.dna.toplevel.fa"        # Path to the reference genome
+annot:  "/scratch/project_2002561/MastitisChallenge/RNASeq-Analysis/Reference/Bos_taurus.ARS-UCD1.2.100.gtf"                 # Path to the reference annotation
+star-index:  "/scratch/project_2002561/MastitisChallenge/RNASeq-Analysis/Reference/STAR2.7.5a"                               # Path to the STAR index to be created
+report-script: "/scratch/project_2002561/pipeline/scripts/workflow-report.Rmd"
+
+params:
+  fastp:
+    trim_front1: 12
+    trim_tail1: 0
+    trim_front2: 0
+    trim_tail2: 0
+  rsem:
+    paired: "--paired-end"                                                      # For SE reads, set here ""
+  star:
+    overhang: 149                                                                # Set this to bp-1 of a single read length
+  stringtie:
+    tpm: 2
+singularity:
+  fastp: "docker://fischuu/fastp:0.20.1"
+  rsem: "docker://fischuu/rsem:1.3.3"
+  star: "docker://fischuu/star:2.7.5a"
+  stringtie: "docker://fischuu/stringtie:2.1.2"

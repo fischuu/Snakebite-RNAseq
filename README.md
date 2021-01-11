@@ -18,3 +18,24 @@ The pipeline is configured in the file `...` with the following required paramet
 
 In addition, the follwoing must be provided
 
+## Preparations:
+
+### Create rawsamples files
+
+### Create samples files
+
+### Create sampleInfo.txt file
+cut -d'-' -f2 samples > pathogen
+cut -d'-' -f3 samples > time
+cut -d'-' -f4 samples > sequencer
+
+paste -d'\t' samples pathogen time sequencer > tmp
+
+rm time
+rm sequencer
+rm pathogen
+
+printf "sample\tpathogen\ttime\tsequencer\n" > header
+cat header tmp > sampleInfo.txt
+rm tmp
+rm header

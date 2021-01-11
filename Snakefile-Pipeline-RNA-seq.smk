@@ -4,6 +4,11 @@ from snakemake.utils import validate, min_version
 
 report: "report/workflow.rst"
 
+##### RNASeq-snakemake pipeline #####
+##### Daniel Fischer (daniel.fischer@luke.fi)
+##### Natural Resources Institute Finland (Luke)
+##### Version: 0.1
+
 ##### set minimum snakemake version #####
 #min_version("5.6")
 
@@ -44,7 +49,8 @@ rule all:
         expand("%s/RSEM/{samples}.genes.results" % (config["project-folder"]), samples=samples),
         expand("%s/FeatureCounts/Annot/{samples}_fc.txt" % (config["project-folder"]), samples=samples),
         expand("%s/FeatureCounts/Stringtie/{samples}_fc.txt" % (config["project-folder"]), samples=samples),
-
+      # Step7-Reporting
+        "%s/finalReport.html" % (config["project-folder"])
 ### setup report #####
 report: "report/workflow.rst"
 
@@ -55,3 +61,4 @@ include: "rules/Step3-QC"
 include: "rules/Step4-Alignment"
 include: "rules/Step5-TranscriptomeAssembly"
 include: "rules/Step6-Quantification"
+include: "rules/Step7-Reporting"
