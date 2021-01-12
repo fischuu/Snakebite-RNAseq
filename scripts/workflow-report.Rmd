@@ -669,6 +669,49 @@ for(i in 2:length(tmp)){
 if(sum(colnames(rsem.transcripts[,-1])==paste0(sampleInfo[,1],"-TPM"))!=nrow(sampleInfo)) stop("Sample quantification order does not match the sample metainformation order!!! Check that!!!")
 ```
 
+Remove low expressed features
+
+```{r}
+rsem.transcripts.meanexp <- apply(rsem.transcripts[,-1],1,mean)
+rsem.transcripts <- rsem.transcripts[rsem.transcripts.meanexp>1,]
+```
+
+Now we create the quantile normalized expression matrix. That way we rely only on ranks, not on the true expressions, in fact.
+```{r}
+# Determine the ranks per sample
+  rsem.transcripts.rank <- apply(rsem.transcripts[,-1],2,rank,ties.method="min")
+# Sort the observations 
+  rsem.transcripts.sorted <- data.frame(apply(rsem.transcripts[,-1], 2, sort))
+# Calculate the means per sorted feature (mean of all the smallest, second smallest etc)
+  rsem.transcripts.mean <- apply(rsem.transcripts.sorted, 1, mean)
+# Substitute the ranks with the average expression value
+  index_to_mean <- function(my_index, my_mean){
+    return(my_mean[my_index])
+  }
+  rsem.transcripts.qn <- apply(rsem.transcripts.rank, 2, index_to_mean, my_mean=rsem.transcripts.mean)
+```
+
+## Hierarchical Clustering
+First we perform a hierarchical clustering, just using euclidean distances as distance measure
+
+```{r}
+#rsem.transcripts.dist <- dist(as.matrix(t(rsem.transcripts[,-1])))
+rsem.transcripts.dist <- as.dist(1-cor(as.matrix(rsem.transcripts[,-1])))
+hc <- hclust(rsem.transcripts.dist)           
+plot(hc)  
+```
+
+And the same for the quantile normalised values
+
+```{r}
+#rsem.transcripts.qn.dist <- dist(as.matrix(t(rsem.transcripts.qn)))
+rsem.transcripts.qn.dist <- as.dist(1-cor(as.matrix(rsem.transcripts.qn)))
+hc <- hclust(rsem.transcripts.qn.dist)           
+plot(hc)  
+```
+
+
+
 ## PCA
 ```{r performPCA}
 
