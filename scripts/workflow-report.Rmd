@@ -45,7 +45,6 @@ if(!is.element("snakemake",ls())){
   pipelineFolder <- "~/git/Pipeline-GBS/"
   pipelineConfig <- "~/git/Pipeline-GBS/GBS-pipeline_config-example.yaml"
 }
-ifelse(refGenome.file == "", refAvail <- FALSE, refAvail <- TRUE)
 ```
 
 ```{r help functions}
@@ -102,16 +101,22 @@ plotMQCFeature <- function(x, y, labels, feature){
   colnames(plotData2) <- tmp[-length(tmp)]
   
   for(i in 1:pos1){
-    plotData1[,i] <- sapply(sapply(sapply(data1,"[",2),"[",i),"[",2)
+    writeThis <- sapply(sapply(sapply(data1,"[",2),"[",i),"[",2)
+    writeThis[sapply(writeThis,is.null)] <- NA
+    writeThis <- unlist(writeThis)
+    plotData1[,i] <- writeThis
   }
   
   for(i in 1:pos2){
-    plotData2[,i] <- sapply(sapply(sapply(data2,"[",2),"[",i),"[",2)
+    writeThis <- sapply(sapply(sapply(data2,"[",2),"[",i),"[",2)
+    writeThis[sapply(writeThis,is.null)] <- NA
+    writeThis <- unlist(writeThis)
+    plotData2[,i] <- writeThis
   }
 
   par(mfrow=c(1,2))
-  ymax1 <- max(plotData1)
-  ymax2 <- max(plotData2)
+  ymax1 <- max(plotData1, na.rm=TRUE)
+  ymax2 <- max(plotData2, na.rm=TRUE)
   ymax <- max(ymax1, ymax2)
   ymax <- ceiling(ymax+ymax*0.1)
   
@@ -588,8 +593,10 @@ conFastQCJSON.avg <- list()
 conFastQCJSON.avg$sequenceQuality <- (conFastQCJSON.R1$sequenceQuality + conFastQCJSON.R2$sequenceQuality)/2
 conFastQCJSON.avg$perBaseN <- (conFastQCJSON.R1$perBaseN + conFastQCJSON.R2$perBaseN)/2
 trimmedFastQCJSON.avg <- list()
-trimmedFastQCJSON.avg$sequenceQuality <- (trimmedFastQCJSON.R1$sequenceQuality + trimmedFastQCJSON.R2$sequenceQuality)/2
-trimmedFastQCJSON.avg$perBaseN <- (trimmedFastQCJSON.R1$perBaseN + trimmedFastQCJSON.R2$perBaseN)/2
+#trimmedFastQCJSON.avg$sequenceQuality <- (trimmedFastQCJSON.R1$sequenceQuality + trimmedFastQCJSON.R2$sequenceQuality)/2
+#trimmedFastQCJSON.avg$perBaseN <- (trimmedFastQCJSON.R1$perBaseN + trimmedFastQCJSON.R2$perBaseN)/2
+trimmedFastQCJSON.avg$sequenceQuality <- trimmedFastQCJSON.R1$sequenceQuality
+trimmedFastQCJSON.avg$perBaseN <- trimmedFastQCJSON.R1$perBaseN
 ```
 
 ### De-Duplication percent

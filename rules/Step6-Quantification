@@ -32,7 +32,8 @@ rule featureCounts_quantify:
     """
     input:
         bam="%s/BAM/{samples}.bam" % (config["project-folder"]),
-        gtf=config["annot"]
+        gtf=config["annot"],
+        tmpdir=config["local-scratch"]
     output:
         "%s/FeatureCounts/Annot/{samples}_fc.txt" % (config["project-folder"])
     log:
@@ -50,6 +51,7 @@ rule featureCounts_quantify:
                         -T {threads} \
                         -a {input.gtf} \
                         -o {output} \
+                        --tmpDir {input.tmpdir} \
                         {input.bam} 2> {log}
     """
 
@@ -59,7 +61,8 @@ rule featureCounts_quantify_merged:
     """
     input:
         bam="%s/BAM/{samples}.bam" % (config["project-folder"]),
-        gtf="%s/Stringtie/merged_STRG.gtf" % (config["project-folder"])
+        gtf="%s/Stringtie/merged_STRG.gtf" % (config["project-folder"]),
+        tmpdir=config["local-scratch"]
     output:
         "%s/FeatureCounts/Stringtie/{samples}_fc.txt" % (config["project-folder"])
     log:
@@ -77,5 +80,6 @@ rule featureCounts_quantify_merged:
                         -T {threads} \
                         -a {input.gtf} \
                         -o {output} \
+                        --tmpDir {input.tmpdir} \
                         {input.bam} 2> {log}
     """

@@ -9,15 +9,15 @@ rule R_finalReport:
         mqcraw="%s/QC/RAW/multiqc_R1/" % (config["project-folder"]),
         mqcconcatenated="%s/QC/CONCATENATED/multiqc_R1/" % (config["project-folder"]),
         mqctrimmed="%s/QC/TRIMMED/multiqc_R1/" % (config["project-folder"]),
-        fcquant=expand("%s/FeatureCounts/Stringtie/{samples}_fc.txt" % (config["project-folder"]), samples=samples)
+        fcquant=expand("%s/FeatureCounts/Stringtie/{samples}_fc.txt" % (config["project-folder"]), samples=samples),
+        fcquantAnnot=expand("%s/FeatureCounts/Annot/{samples}_fc.txt" % (config["project-folder"]), samples=samples)
     output:
         "%s/finalReport.html" % (config["project-folder"])
     log:
         "%s/logs/R/finalReport.log" % (config["project-folder"])
     benchmark:
         "%s/benchmark/R/finalReport.benchmark.tsv" % (config["project-folder"])
-    container:
-        "docker://fischuu/r-gbs:3.6.3-0.1"
+    singularity: config["singularity"]["report"]
     params:
        projFolder=config["project-folder"],
        pipeFolder=config["pipeline-folder"],

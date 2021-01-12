@@ -17,6 +17,8 @@ report: "report/workflow.rst"
 rawsamples = pd.read_table(config["rawsamples"], header=None)[0].tolist()
 samples = pd.read_table(config["samples"], header=None)[0].tolist()
 
+workdir: config["project-folder"]
+
 wildcard_constraints:
     rawsamples="|".join(rawsamples),
     samples="|".join(samples)

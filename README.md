@@ -25,17 +25,20 @@ In addition, the follwoing must be provided
 ### Create samples files
 
 ### Create sampleInfo.txt file
+cut -d'-' -f1 samples > animal
 cut -d'-' -f2 samples > pathogen
 cut -d'-' -f3 samples > time
 cut -d'-' -f4 samples > sequencer
 
-paste -d'\t' samples pathogen time sequencer > tmp
 
+paste -d'\t' samples animal pathogen time sequencer > tmp
+
+rm animal
 rm time
 rm sequencer
 rm pathogen
 
-printf "sample\tpathogen\ttime\tsequencer\n" > header
+printf "sample\tanimal\tpathogen\ttime\tsequencer\n" > header
 cat header tmp > sampleInfo.txt
 rm tmp
 rm header
