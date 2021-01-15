@@ -32,8 +32,7 @@ rule featureCounts_quantify:
     """
     input:
         bam="%s/BAM/{samples}.bam" % (config["project-folder"]),
-        gtf=config["annot"],
-        tmpdir=config["local-scratch"]
+        gtf=config["annot"]
     output:
         "%s/FeatureCounts/Annot/{samples}_fc.txt" % (config["project-folder"])
     log:
@@ -42,7 +41,8 @@ rule featureCounts_quantify:
         "%s/benchmark/featureCounts/featureCounts_ref.{samples}.benchmark.tsv" % (config["project-folder"])
     threads: 20
     params:
-        outFolder="%s/FeatureCounts/Annot" % (config["project-folder"])
+        outFolder="%s/FeatureCounts/Annot" % (config["project-folder"]),
+        tmpdir=config["local-scratch"]
     singularity: "docker://biocontainers/subread:v1.6.3dfsg-1-deb_cv1"
     shell:"""
           mkdir -p {params.outFolder}
@@ -51,7 +51,7 @@ rule featureCounts_quantify:
                         -T {threads} \
                         -a {input.gtf} \
                         -o {output} \
-                        --tmpDir {input.tmpdir} \
+                        --tmpDir {params.tmpdir} \
                         {input.bam} 2> {log}
     """
 
@@ -61,8 +61,7 @@ rule featureCounts_quantify_merged:
     """
     input:
         bam="%s/BAM/{samples}.bam" % (config["project-folder"]),
-        gtf="%s/Stringtie/merged_STRG.gtf" % (config["project-folder"]),
-        tmpdir=config["local-scratch"]
+        gtf="%s/Stringtie/merged_STRG.gtf" % (config["project-folder"])
     output:
         "%s/FeatureCounts/Stringtie/{samples}_fc.txt" % (config["project-folder"])
     log:
@@ -71,7 +70,8 @@ rule featureCounts_quantify_merged:
         "%s/benchmark/featureCounts/featureCounts_merged.{samples}.benchmark.tsv" % (config["project-folder"])
     threads: 20
     params:
-        outFolder="%s/FeatureCounts/Stringtie" % (config["project-folder"])
+        outFolder="%s/FeatureCounts/Stringtie" % (config["project-folder"]),
+        tmpdir=config["local-scratch"]
     singularity: "docker://biocontainers/subread:v1.6.3dfsg-1-deb_cv1"
     shell:"""
           mkdir -p {params.outFolder}
@@ -80,6 +80,6 @@ rule featureCounts_quantify_merged:
                         -T {threads} \
                         -a {input.gtf} \
                         -o {output} \
-                        --tmpDir {input.tmpdir} \
+                        --tmpDir {params.tmpdir} \
                         {input.bam} 2> {log}
     """
