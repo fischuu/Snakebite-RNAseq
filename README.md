@@ -1,5 +1,5 @@
 # Pipeline-RNA-seq
-Standard RNA-seq pipeline.
+Standard RNA-seq snakemake pipeline.
 
 ## Installation
 The test data is not part of this repository and needs to be downloaded separately here:
@@ -42,3 +42,6 @@ printf "sample\tanimal\tpathogen\ttime\tsequencer\n" > header
 cat header tmp > sampleInfo.txt
 rm tmp
 rm header
+
+# Current status
+Under development and possible not yet stable for production
