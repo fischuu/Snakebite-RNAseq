@@ -41,9 +41,9 @@ knitr::opts_chunk$set(echo = FALSE,
                       dev = c('png', 'pdf'),
                       fig.align = 'center', fig.height = 5, fig.width = 8.5)
 if(!is.element("snakemake",ls())){
-  projFolder <- "~/projectsTmp/Example"
-  pipelineFolder <- "~/git/Pipeline-GBS/"
-  pipelineConfig <- "~/git/Pipeline-GBS/GBS-pipeline_config-example.yaml"
+  projFolder <- "/hdd/data2/Projects/MastitisChallenge/"
+  pipelineFolder <- "~/git/Pipeline-RNA-seq/"
+  pipelineConfig <- "~/git/Project-MastitisChallenge/Analyses/RNASeq-Analysis/Pipeline-RNA-seq_config.yaml"
 }
 ```
 
@@ -648,7 +648,7 @@ plotMQCFeature(x=file.path(projFolder,"QC","CONCATENATED","multiqc_R1"),
 ```
 
 
-# Analyses
+# Analyses preparations
 
 ## Quantifications
 We import the transcript quantification from RSEM and base the PCA plots on those
@@ -691,8 +691,10 @@ Now we create the quantile normalized expression matrix. That way we rely only o
   rsem.transcripts.qn <- apply(rsem.transcripts.rank, 2, index_to_mean, my_mean=rsem.transcripts.mean)
 ```
 
+# Clustering
+
 ## Hierarchical Clustering
-First we perform a hierarchical clustering, just using euclidean distances as distance measure
+First we perform a hierarchical clustering, using the euclidean distances of the RSEM transcript values as distance measure
 
 ```{r}
 #rsem.transcripts.dist <- dist(as.matrix(t(rsem.transcripts[,-1])))
@@ -701,7 +703,7 @@ hc <- hclust(rsem.transcripts.dist)
 plot(hc)  
 ```
 
-And the same for the quantile normalised values
+And the same for the quantile normalised RSEM transcript values
 
 ```{r}
 #rsem.transcripts.qn.dist <- dist(as.matrix(t(rsem.transcripts.qn)))
@@ -710,21 +712,30 @@ hc <- hclust(rsem.transcripts.qn.dist)
 plot(hc)  
 ```
 
-
+# Dimension Reduction
 
 ## PCA
 ```{r performPCA}
-
 expr.PCA <- prcomp(t(rsem.transcripts[,-1]))
 ```
+
+This is just the plain PCA, without using any colouring schemes.
 
 ```{r}
 palette("default")
 pairs(expr.PCA$x[,1:3])
+```
 
+```{r, results="asis"}
 if(ncol(sampleInfo)>1){
 for(i in 2:ncol(sampleInfo)){
-  pairs(expr.PCA$x[,1:3], col=as.factor(sampleInfo[,i]), pch=20)
+  tmpTitle <- paste("### 3C: ",colnames(sampleInfo)[i],"\n")
+  cat(sprintf(tmpTitle))
+  pairs(expr.PCA$x[,1:3], col=as.numeric(as.factor(sampleInfo[,i])), pch=20, oma=c(3,3,3,15))
+  par(xpd=TRUE)
+  legend("bottomright", fill=as.factor(levels(as.factor(sampleInfo[,i]))), legend=levels(as.factor(sampleInfo[,i])))
+  par(xpd=FALSE)
+  cat(sprintf("\n\n"))
 }
 }
 ```
@@ -732,23 +743,35 @@ for(i in 2:ncol(sampleInfo)){
 ```{r}
 cols <- min(ncol(expr.PCA$x),10)
 pairs(expr.PCA$x[,1:cols])
+```
 
+```{r, results="asis"}
 if(ncol(sampleInfo)>1){
 for(i in 2:ncol(sampleInfo)){
-  pairs(expr.PCA$x[,1:cols], col=as.numeric(as.factor(sampleInfo[,i])), pch=20)
+  tmpTitle <- paste("### 10C: ",colnames(sampleInfo)[i],"\n")
+  cat(sprintf(tmpTitle))
+  pairs(expr.PCA$x[,1:cols], col=as.numeric(as.factor(sampleInfo[,i])), pch=20, oma=c(3,3,3,15))
+  par(xpd=TRUE)
+  legend("bottomright", fill=as.factor(levels(as.factor(sampleInfo[,i]))), legend=levels(as.factor(sampleInfo[,i])))
+  par(xpd=FALSE)
+  cat(sprintf("\n\n"))
 }
 }
 ```
 
-## Other methods
-
-### ICS
-```{r, eval=FALSE}
+## ICS
+```{r, results="asis"}
 cols <- min(ncol(expr.PCA$x),10)
 FOBI <- ics(expr.PCA$x[,1:cols])
 if(ncol(sampleInfo)>1){
 for(i in 2:ncol(sampleInfo)){
-  plot(FOBI, col=as.numeric(as.factor(sampleInfo[,i])), pch=20)
+  tmpTitle <- paste("### ",colnames(sampleInfo)[i],"\n")
+  cat(sprintf(tmpTitle))
+  plot(FOBI, col=as.numeric(as.factor(sampleInfo[,i])), pch=20, oma=c(3,3,3,15))
+  par(xpd=TRUE)
+  legend("bottomright", fill=as.factor(levels(as.factor(sampleInfo[,i]))), legend=levels(as.factor(sampleInfo[,i])))
+  par(xpd=FALSE)
+  cat(sprintf("\n\n"))
 }  
 } else {
    plot(FOBI, pch=20)
@@ -756,30 +779,44 @@ for(i in 2:ncol(sampleInfo)){
 
 ```
 
-### t-SNE
-```{r}
+## t-SNE
+```{r, results="asis"}
 cols <- min(ncol(expr.PCA$x),10)
 TSNEout <- tsne(expr.PCA$x[,1:cols], k=5)
 
 if(ncol(sampleInfo)>1){
 for(i in 2:ncol(sampleInfo)){
-  plot(TSNEout, col=as.numeric(as.factor(sampleInfo[,i])), pch=20)
+  tmpTitle <- paste("### ",colnames(sampleInfo)[i],"\n")
+  cat(sprintf(tmpTitle))
+  plot(TSNEout, col=as.numeric(as.factor(sampleInfo[,i])), pch=20, oma=c(3,3,3,15))
+  par(xpd=TRUE)
+  legend("bottomright", fill=as.factor(levels(as.factor(sampleInfo[,i]))), legend=levels(as.factor(sampleInfo[,i])))
+  par(xpd=FALSE)
+  cat(sprintf("\n\n"))
 }
 } else {
    plot(TSNEout, pch=20)
 }
 ```
 
-### Kernel PCA
+## Kernel PCA
 ```{r}
 # Kernel PCA
 cols <- min(min(dim(expr.PCA$x)),10)-1
 
 KPCAres <- kpca(expr.PCA$x[,1:cols])
+```
 
+```{r, results="asis"}
 if(ncol(sampleInfo)>1){
   for(i in 2:ncol(sampleInfo)){
-     pairs(rotated(KPCAres)[,1:cols], col=as.numeric(as.factor(sampleInfo[,i])), pch=20)
+      tmpTitle <- paste("### ",colnames(sampleInfo)[i],"\n")
+      cat(sprintf(tmpTitle))
+      pairs(rotated(KPCAres)[,1:cols], col=as.numeric(as.factor(sampleInfo[,i])), pch=20, oma=c(3,3,3,15))
+      par(xpd=TRUE)
+      legend("bottomright", fill=as.factor(levels(as.factor(sampleInfo[,i]))), legend=levels(as.factor(sampleInfo[,i])))
+      par(xpd=FALSE)
+      cat(sprintf("\n\n"))
   }
 
 } else {
@@ -789,8 +826,8 @@ if(ncol(sampleInfo)>1){
 
 ```
 
-### Diffusion map
-```{r}
+## Diffusion map
+```{r, results="asis"}
 # Diffusion map
 #  dm <- DiffusionMap(expr.PCA$x[,1:10])
 #  for(i in 2:ncol(sampleInfo)){
@@ -798,16 +835,24 @@ if(ncol(sampleInfo)>1){
 #  }
 ```
 
-### Locally linear embedding (LLE)
+## Locally linear embedding (LLE)
 ```{r}
 # LLE
 cols <- min(ncol(expr.PCA$x),10)
 
-  lleres <- lle(expr.PCA$x[,1:cols], m=7, k=17, v=0.99)
- 
-if(ncol(sampleInfo)>1){
- for(i in 2:ncol(sampleInfo)){
-     pairs(lleres$Y[,1:5], col=as.numeric(as.factor(sampleInfo[,i])), pch=20)
+lleres <- lle(expr.PCA$x[,1:cols], m=7, k=17, v=0.99)
+```
+
+```{r, results="asis"}
+  if(ncol(sampleInfo)>1){
+  for(i in 2:ncol(sampleInfo)){
+      tmpTitle <- paste("### ",colnames(sampleInfo)[i],"\n")
+      cat(sprintf(tmpTitle))
+      pairs(lleres$Y[,1:5], col=as.numeric(as.factor(sampleInfo[,i])), pch=20, oma=c(3,3,3,15))
+      par(xpd=TRUE)
+      legend("bottomright", fill=as.factor(levels(as.factor(sampleInfo[,i]))), legend=levels(as.factor(sampleInfo[,i])))
+      par(xpd=FALSE)
+      cat(sprintf("\n\n"))
   }
 
 } else {
