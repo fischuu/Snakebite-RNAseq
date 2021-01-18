@@ -726,6 +726,10 @@ palette("default")
 pairs(expr.PCA$x[,1:3])
 ```
 
+```{r}
+names(expr.PCA$x[,1])[which(expr.PCA$x[,1]>0)]
+```
+
 ```{r, results="asis"}
 if(ncol(sampleInfo)>1){
 for(i in 2:ncol(sampleInfo)){
