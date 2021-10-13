@@ -28,19 +28,21 @@ In addition, the follwoing must be provided
 cut -d'-' -f1 samples > animal
 cut -d'-' -f2 samples > pathogen
 cut -d'-' -f3 samples > time
-cut -d'-' -f4 samples > sequencer
+cut -d'-' -f4 samples > replicate
+cut -d'-' -f5 samples > sequencer
 
 
-paste -d'\t' samples animal pathogen time sequencer > tmp
+paste -d'\t' samples animal pathogen time replicate sequencer > sampleList.tmp
 
 rm animal
 rm time
 rm sequencer
 rm pathogen
+rm replicate
 
-printf "sample\tanimal\tpathogen\ttime\tsequencer\n" > header
-cat header tmp > sampleInfo.txt
-rm tmp
+printf "sample\tanimal\tpathogen\ttime\treplicate\tsequencer\n" > header
+cat header sampleList.tmp > sampleInfo.txt
+rm sampleList.tmp
 rm header
 
 # Current status
