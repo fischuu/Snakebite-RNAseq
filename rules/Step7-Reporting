@@ -21,11 +21,13 @@ rule R_finalReport:
     params:
        projFolder=config["project-folder"],
        pipeFolder=config["pipeline-folder"],
-       pipeConfig=config["pipeline-config"]
+       pipeConfig=config["pipeline-config"],
+       refAnnot.file=config["annot"]
     shell:"""
        R -e "projFolder <- '{params.projFolder}'; \
              pipelineFolder <- '{params.pipeFolder}'; \
              pipelineConfig <- '{params.pipeConfig}'; \
+             refAnnot.file <- '{params.refAnnot.file}'; \
              snakemake <- TRUE;\
              rmarkdown::render('{input.script}',output_file='{output}')" &> {log}
     """

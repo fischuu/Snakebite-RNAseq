@@ -41,9 +41,10 @@ knitr::opts_chunk$set(echo = FALSE,
                       dev = c('png', 'pdf'),
                       fig.align = 'center', fig.height = 5, fig.width = 8.5)
 if(!is.element("snakemake",ls())){
-  projFolder <- "/hdd/data2/Projects/MastitisChallenge/"
-  pipelineFolder <- "~/git/Pipeline-RNA-seq/"
-  pipelineConfig <- "~/git/Project-MastitisChallenge/Analyses/RNASeq-Analysis/Pipeline-RNA-seq_config.yaml"
+  projFolder <- "/scratch/project_2002561/MastitisChallenge/RNASeq-iSeq-Run2/"
+  pipelineFolder <- "/scratch/project_2002561/pipeline/"
+  pipelineConfig <- "/scratch/project_2002561/MastitisChallenge/RNASeq-iSeq-Run2/Pipeline-RNA-seq_config.yaml"
+  refAnnot.file <- "/scratch/project_2002561/MastitisChallenge/RNASeq-iSeq-Run2/Reference/Bos_taurus.ARS-UCD1.2.100.gtf"
 }
 ```
 
@@ -650,7 +651,7 @@ plotMQCFeature(x=file.path(projFolder,"QC","CONCATENATED","multiqc_R1"),
 
 # Analyses preparations
 
-## Quantifications
+## Quantifications (RSEM)
 We import the transcript quantification from RSEM and base the PCA plots on those
 
 ```{r, warning=FALSE}
@@ -666,7 +667,18 @@ for(i in 2:length(tmp)){
   colnames(rsem.transcripts.tmp)[2] <- paste0(gsub(".isoforms.results","",tmp[i]),"-TPM")
   rsem.transcripts <- merge(rsem.transcripts, rsem.transcripts.tmp, by="transcript_id")
 }
-if(sum(colnames(rsem.transcripts[,-1])==paste0(sampleInfo[,1],"-TPM"))!=nrow(sampleInfo)) stop("Sample quantification order does not match the sample metainformation order!!! Check that!!!")
+
+if(sum(colnames(rsem.transcripts[,-1])==paste0(sampleInfo[,1],"-TPM"))!=nrow(sampleInfo)){
+  warning("Sample quantification order does not match the sample metainformation order!!! Check that!!!")
+  
+  sampleInfo.bak <- sampleInfo
+  
+  for(i in 2:ncol(rsem.transcripts)){
+    newOrder <- which(colnames(rsem.transcripts)[i]==paste0(sampleInfo.bak[,1],"-TPM"))
+    sampleInfo[i-1,] <- sampleInfo.bak[newOrder,]
+  }
+  
+} 
 ```
 
 Remove low expressed features
@@ -689,6 +701,73 @@ Now we create the quantile normalized expression matrix. That way we rely only o
     return(my_mean[my_index])
   }
   rsem.transcripts.qn <- apply(rsem.transcripts.rank, 2, index_to_mean, my_mean=rsem.transcripts.mean)
+```
+
+## Quantification (featureCounts)
+
+We import the feature counts data together with the annotation to get the biotype distribution of the data.
+
+First some general stats about the used reference genome annotation
+
+```{r}
+annotation <- importGTF(refAnnot.file)
+```
+
+Following numbers of various annotations per biotype are available inside annotaiton file
+
+```{r}
+out_html <- knitr::kable(table(annotation$gene_biotype), col.names = NULL, "html")
+kable_styling(out_html, "striped", position = "left")
+``` 
+
+Import the featureCOunts quantification
+
+```{r}
+fc.files <- list.files(file.path(projFolder, "FeatureCounts", "Annot"), pattern="*.txt$")
+fc.in <- list()
+for(i in 1:length(fc.files)){
+  fc.in[[i]] <- importFeatureCounts(file.path(projFolder, "FeatureCounts", "Annot", fc.files[i]))
+}
+
+fc.expr.star <- merge(fc.in[[1]]$expValues, fc.in[[2]]$expValues, by="Geneid")
+
+for(i in 3:length(fc.files)){
+  fc.expr.star <- merge(fc.expr.star, fc.in[[i]]$expValues, by="Geneid")
+}
+colnames(fc.expr.star) <- sub(".*?Reference.", "",colnames(fc.expr.star))
+colnames(fc.expr.star) <- sub("_reference_star.bam", "",colnames(fc.expr.star))
+```
+Now get the counts per biotype per sample
+
+```{r}
+biotypes <- names(table(annotation$gene_biotype))
+
+counts_per_biotype <- matrix(0, ncol=ncol(fc.expr.star)-1, nrow=length(biotypes))
+rownames(counts_per_biotype) <- biotypes
+colnames(counts_per_biotype) <- colnames(fc.expr.star)[-1]
+
+for(i in 1:length(biotypes)){
+  biotype.genes <- annotation$gene_id[annotation$gene_biotype==biotypes[i]]
+  counts_per_biotype[i,] <- apply(fc.expr.star[is.element(fc.expr.star$Geneid, biotype.genes),-1],2,sum)
+}
+```
+
+```{r}
+out_html <- knitr::kable(counts_per_biotype, "html")
+kable_styling(out_html, "striped", position = "left")
+```
+
+```{r}
+out_html <- knitr::kable(round(t(t(counts_per_biotype)/apply(counts_per_biotype,2,sum))*100,2), "html")
+kable_styling(out_html, "striped", position = "left")
+```
+
+And a summary table of the percentages
+
+```{r}
+tmp <- round(t(t(counts_per_biotype)/apply(counts_per_biotype,2,sum))*100,2)
+out_html <- knitr::kable(t(apply(tmp,1,summary)), "html")
+kable_styling(out_html, "striped", position = "left")
 ```
 
 # Clustering
