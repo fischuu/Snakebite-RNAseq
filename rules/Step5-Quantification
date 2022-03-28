@@ -1,0 +1,54 @@
+rule rsem_calculate_expressions:
+    """
+    Calculate the expression values (RSEM).
+    """
+    input:
+        bam="%s/BAM/{samples}/{samples}_Aligned.toTranscriptome.out.bam" % (config["project-folder"]),
+        index="%s/Reference/RSEM.chrlist" % (config["project-folder"])
+    output:
+        "%s/RSEM/{samples}.genes.results" % (config["project-folder"]),
+    log:
+        "%s/logs/RSEM/rsem_expr.{samples}.log" % (config["project-folder"])
+    benchmark:
+        "%s/benchmark/RSEM/rsem_expr.{samples}.benchmark.tsv" % (config["project-folder"])
+    threads: 20
+    singularity: config["singularity"]["rsem"]
+    params:
+         rsemindex="%s/Reference/RSEM" % (config["project-folder"]),
+         outfolder="%s/RSEM" % (config["project-folder"]),
+         paired=config["params"]["rsem"]["paired"]
+    shell:"""
+         mkdir -p {params.outfolder}
+         rsem-calculate-expression --alignments {input.bam} -p 20 {params.paired} --fragment-length-mean 75 {params.rsemindex} {wildcards.samples} &> {log}
+         
+         mv {wildcards.samples}* {params.outfolder}         
+    """
+    
+# vim: set filetype=sh :
+
+rule featureCounts_quantify:
+    """
+    Quantify the aligned reads (featureCounts).
+    """
+    input:
+        bam="%s/BAM/{samples}.bam" % (config["project-folder"]),
+        gtf=config["annot"]
+    output:
+        "%s/FeatureCounts/{samples}_fc.txt" % (config["project-folder"])
+    log:
+        "%s/logs/featureCounts/featureCounts_ref.{samples}.log" % (config["project-folder"])
+    benchmark:
+        "%s/benchmark/featureCounts/featureCounts_ref.{samples}.benchmark.tsv" % (config["project-folder"])
+    threads: 20
+    params:
+        outFolder="%s/FeatureCounts/" % (config["project-folder"])
+    singularity: "docker://biocontainers/subread:v1.6.3dfsg-1-deb_cv1"
+    shell:"""
+          mkdir -p {params.outFolder}
+    
+          featureCounts -p \
+                        -T {threads} \
+                        -a {input.gtf} \
+                        -o {output} \
+                        {input.bam} 2> {log}
+    """

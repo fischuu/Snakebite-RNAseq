@@ -42,6 +42,7 @@ multiqc_quality_control_raw_data:
     job-name: multiqc_raw_data
     time: 02:30:00
     cpus-per-task: 1
+    mem-per-cpu: 16000
 
 fastqc_quality_control_concatenated_data:
     job-name: fastqc_concatenated_data
@@ -52,6 +53,7 @@ multiqc_quality_control_concatenated_data:
     job-name: multiqc_concatenated_data
     time: 02:30:00
     cpus-per-task: 1
+    mem-per-cpu: 16000
 
 fastqc_quality_control_trimmed_data:
     job-name: fastqc_trimmed_data
@@ -62,6 +64,21 @@ multiqc_quality_control_trimmed_data:
     job-name: multiqc_trimmed_data
     time: 02:30:00
     cpus-per-task: 1
+    mem-per-cpu: 16000
+
+# Step3b - Decontamination
+################################################################################
+
+build_contamination_indices:
+    job-name: decon_star_index
+    time: 08:00:00
+    mem-per-cpu: 16000
+    cpus-per-task: 20
+
+star_decontaminate_reads:
+    job-name: star_decontaminate_reads
+    time: 04:00:00
+    cpus-per-task: 20
 
 # Step4 - Alignment
 ################################################################################

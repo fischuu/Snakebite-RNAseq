@@ -7,10 +7,10 @@ report: "report/workflow.rst"
 ##### RNASeq-snakemake pipeline #####
 ##### Daniel Fischer (daniel.fischer@luke.fi)
 ##### Natural Resources Institute Finland (Luke)
-##### Version: 0.1.1
+##### Version: 0.1.2
 
 ##### set minimum snakemake version #####
-#min_version("5.6")
+#min_version("6.0")
 
 ##### load config and sample sheets #####
 
@@ -22,6 +22,19 @@ workdir: config["project-folder"]
 wildcard_constraints:
     rawsamples="|".join(rawsamples),
     samples="|".join(samples)
+
+##### Functionm definitions #####
+
+def make_fq_alignment_pairs(wildcards):
+    sample_name = wildcards.samples
+    if config["contamination-folder"] == "":
+      r1= config["project-folder"]+"/FASTQ/TRIMMED/" + sample_name + "_R1.trimmed.fastq.gz"
+      r2= config["project-folder"]+"/FASTQ/TRIMMED/" + sample_name + "_R2.trimmed.fastq.gz"
+    else:
+      r1= config["project-folder"]+"/FASTQ/DECONTAMINATED/" + sample_name + "_R1.decontaminated.fastq.gz"
+      r2= config["project-folder"]+"/FASTQ/DECONTAMINATED/" + sample_name + "_R2.decontaminated.fastq.gz"
+    result=[r1, r2]
+    return result
 
 ##### run complete pipeline #####
 
@@ -43,6 +56,7 @@ rule all:
         "%s/QC/CONCATENATED/multiqc_R2/" % (config["project-folder"]),
         "%s/QC/TRIMMED/multiqc_R1/" % (config["project-folder"]),
         "%s/QC/TRIMMED/multiqc_R2/" % (config["project-folder"]),
+#        expand(["%s/FASTQ/DECONTAMINATED/{samples}_R1.decontaminated.fastq.gz" % (config["project-folder"]),"%s/FASTQ/DECONTAMINATED/{samples}_R2.decontaminated.fastq.gz" % (config["project-folder"])], samples=samples),
       # Step4-Alignment
         expand("%s/BAM/{samples}.bam" % (config["project-folder"]), samples=samples),
       # Step5-TranscriptomeAssembly
@@ -60,6 +74,7 @@ report: "report/workflow.rst"
 include: "rules/Step1-Preparations"
 include: "rules/Step2-Preprocessing"
 include: "rules/Step3-QC"
+include: "rules/Step3b-Decontamination"
 include: "rules/Step4-Alignment"
 include: "rules/Step5-TranscriptomeAssembly"
 include: "rules/Step6-Quantification"

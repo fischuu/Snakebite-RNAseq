@@ -5,8 +5,7 @@ rule star_map_reads:
     input:
         index="%s/chrName.txt" % (config["star-index"]),
         annotation=config["annot"],
-        fastq=["%s/FASTQ/TRIMMED/{samples}_R1.trimmed.fastq.gz" % (config["project-folder"]),
-               "%s/FASTQ/TRIMMED/{samples}_R2.trimmed.fastq.gz" % (config["project-folder"])]
+        fastq=make_fq_alignment_pairs
     output:
         file="%s/BAM/{samples}.bam" % (config["project-folder"]),
         tcfile="%s/BAM/{samples}/{samples}_Aligned.toTranscriptome.out.bam" % (config["project-folder"]),

@@ -14,7 +14,7 @@ rule star_create_index:
         "%s/logs/STAR/createIndex.log" % (config["project-folder"])
     benchmark:
         "%s/benchmark/STAR/createIndex.benchmark.tsv" % (config["project-folder"])
-    threads:40
+    threads:20
     params:
        overhang=config["params"]["star"]["overhang"]
     singularity: config["singularity"]["star"]
@@ -50,8 +50,8 @@ rule Concatenate_lanes:
     Concatenate the demultiplexed fastq files (BASH).
     """
     input:
-      R1=expand("%s/FASTQ/RAW/{rawsamples}_1.fq.gz" % (config["project-folder"]), rawsamples=rawsamples),
-      R2=expand("%s/FASTQ/RAW/{rawsamples}_2.fq.gz" % (config["project-folder"]), rawsamples=rawsamples)
+      R1=expand("%s/FASTQ/RAW/{rawsamples}_R1_001.fastq.gz" % (config["project-folder"]), rawsamples=rawsamples),
+      R2=expand("%s/FASTQ/RAW/{rawsamples}_R2_001.fastq.gz" % (config["project-folder"]), rawsamples=rawsamples)
     output:
       R1="%s/FASTQ/CONCATENATED/{samples}_R1.fastq.gz" % (config["project-folder"]),
       R2="%s/FASTQ/CONCATENATED/{samples}_R2.fastq.gz" % (config["project-folder"])
@@ -66,7 +66,7 @@ rule Concatenate_lanes:
     shell:"""
         echo "Number of threads used:" {threads}
         mkdir -p {params.outfolder}
-        cat {params.infolder}/{wildcards.samples}*_1.fq.gz > {output.R1} 2> {log}
-        cat {params.infolder}/{wildcards.samples}*_2.fq.gz > {output.R2} 2> {log}
+        cat {params.infolder}/{wildcards.samples}*_R1_001.fastq.gz > {output.R1} 2> {log}
+        cat {params.infolder}/{wildcards.samples}*_R2_001.fastq.gz > {output.R2} 2> {log}
   	"""    
     
