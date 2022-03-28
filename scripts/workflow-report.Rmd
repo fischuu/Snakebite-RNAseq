@@ -41,11 +41,15 @@ knitr::opts_chunk$set(echo = FALSE,
                       dev = c('png', 'pdf'),
                       fig.align = 'center', fig.height = 5, fig.width = 8.5)
 if(!is.element("snakemake",ls())){
-  projFolder <- "/scratch/project_2002561/MastitisChallenge/RNASeq-iSeq-Run2/"
+  projFolder <- "/scratch/project_2002561/MastitisChallenge/RNASeq-iSeqTestRun/"
   pipelineFolder <- "/scratch/project_2002561/pipeline/"
-  pipelineConfig <- "/scratch/project_2002561/MastitisChallenge/RNASeq-iSeq-Run2/Pipeline-RNA-seq_config.yaml"
-  refAnnot.file <- "/scratch/project_2002561/MastitisChallenge/RNASeq-iSeq-Run2/Reference/Bos_taurus.ARS-UCD1.2.100.gtf"
+  pipelineConfig <- "/scratch/project_2002561/MastitisChallenge/RNASeq-iSeqTestRun/Pipeline-RNA-seq_config.yaml"
+  refAnnot.file <- "/scratch/project_2002561/MastitisChallenge/RNASeq-iSeqTestRun/Reference/Bos_taurus.ARS-UCD1.2.100.gtf"
 }
+```
+
+```{r import config file}
+configFile <- readLines(pipelineConfig)
 ```
 
 ```{r help functions}
@@ -648,6 +652,22 @@ plotMQCFeature(x=file.path(projFolder,"QC","CONCATENATED","multiqc_R1"),
                feature="fastqc_per_base_sequence_quality_plot")
 ```
 
+# Decontamination
+In case decontamination references are provided, the statistics are shown here
+
+```{r}
+contamination_references <- configFile[grep("^contamination-refs: ", configFile)]
+contamination_references <- gsub("contamination-refs: ", "", contamination_references)
+contamination_references <- gsub('\"', '', contamination_references)
+contamination_references <- gsub("\\[|\\]", "", contamination_references)
+contamination_references <- strsplit(contamination_references, ",")[[1]]
+
+ifelse(length(contamination_references)>0, decontamination_active <- TRUE,  decontamination_active <- FALSE)
+```
+```{r}
+# And now load the line counts and do a barplot for each sample....
+```
+
 
 # Analyses preparations
 
@@ -981,10 +1001,6 @@ IMPORT HERE STILL THE BENCHMARKING TABLES
 
 ## Pipeline configuration
 This is the configuration file that is used for the project:
-
-```{r import config file}
-configFile <- readLines(pipelineConfig)
-```
 
 ```{r print configuration}
   out_html <- knitr::kable(as.matrix(configFile), "html")

@@ -92,7 +92,7 @@ else:
                 tmpFastq=({params.project_folder}/{wildcards.samples}_"$i"_R1.decontaminated.fastq.gz {params.project_folder}/{wildcards.samples}_"$i"_R2.decontaminated.fastq.gz)
                 currentInput="${{tmpFastq[@]}}"
                 
-                finalFastq=currentInput;
+                finalFastq=$currentInput;
             done
 
             mkdir -p {params.project_folder}/FASTQ/DECONTAMINATED;
