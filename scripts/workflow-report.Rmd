@@ -410,6 +410,18 @@ par(mar=c(10,5,1,1))
 plotFastQCFeature(conFastQC.R1, conFastQC.R2, feature="Total.Sequences")
 ```
 
+```{r}
+# This is the summary table about all reads
+tmp <- conFastQC.R1$Total.Sequences
+names(tmp) <- conFastQC.R1$Sample
+for(i in 1:length(tmp)){
+  tmpPos <- grep(samples[i,1],names(tmp))
+  names(tmp)[tmpPos] <- samples[i,1] 
+}
+read_origins <- t(as.matrix(tmp))
+rownames(read_origins)[1] <- "raw_reads"
+```
+
 ### Per base N content (left: R1, right: R2)
 
 ```{r con data per base n content}
@@ -532,6 +544,19 @@ if(nrow(tmp)>0){
 ```{r trimmed data total sequences}
 par(mar=c(10,5,1,1))
 plotFastQCFeature(trimmedFastQC.R1, trimmedFastQC.R2, feature="Total.Sequences")
+```
+
+```{r}
+# This is the summary table about all reads
+tmp <- trimmedFastQC.R1$Total.Sequences
+names(tmp) <- trimmedFastQC.R1$Sample
+for(i in 1:length(tmp)){
+  tmpPos <- grep(samples[i,1],names(tmp))
+  names(tmp)[tmpPos] <- samples[i,1] 
+}
+tmp <- t(as.matrix(tmp))
+read_origins <- rbind(read_origins, tmp)
+rownames(read_origins)[2] <- "QC_trimmed_reads"
 ```
 
 ### Per base N content
@@ -660,14 +685,48 @@ contamination_references <- configFile[grep("^contamination-refs: ", configFile)
 contamination_references <- gsub("contamination-refs: ", "", contamination_references)
 contamination_references <- gsub('\"', '', contamination_references)
 contamination_references <- gsub("\\[|\\]", "", contamination_references)
-contamination_references <- strsplit(contamination_references, ",")[[1]]
+contamination_references <- trimws(strsplit(contamination_references, ",")[[1]])
 
 ifelse(length(contamination_references)>0, decontamination_active <- TRUE,  decontamination_active <- FALSE)
 ```
 ```{r}
+if(decontamination_active){
+  decon.files <- list.files(file.path(projFolder, "FASTQ", "DECONTAMINATED"), pattern="*R1.decontaminated.fastq.wcl")
+  decon.values <- matrix(0, ncol=length(as.vector(as.matrix(samples))), nrow=length(contamination_references))
+  colnames(decon.values) <- as.vector(as.matrix(samples))
+  rownames(decon.values) <- contamination_references
+  for(i in 1:length(contamination_references)){
+    for(j in 1:nrow(samples)){
+      decon.values[i,j] <- read.table(file.path(projFolder, "FASTQ", "DECONTAMINATED", paste0(as.vector(as.matrix(samples))[j],"_",contamination_references[i],"_R1.decontaminated.fastq.wcl")))[1,1]
+    }
+  }
+  decon.values <- decon.values / 4
+  
+  for(i in 1:nrow(decon.values)){
+    if(sum(colnames(decon.values)==colnames(read_origins))!=ncol(read_origins)) stop("The same order assumption does not hold, fix that!!! Error-code: 00001")
+    read_origins <- rbind(read_origins, decon.values[i,])
+  }
+  
+  rownames(read_origins) <- c(rownames(read_origins)[1:2], contamination_references)
+}
 # And now load the line counts and do a barplot for each sample....
 ```
 
+
+```{r}
+plot_read_origins <- read_origins
+plot_read_origins[2,] <- plot_read_origins[1,] - plot_read_origins[2,]
+if(nrow(plot_read_origins)>2){
+  for(i in 3:nrow(read_origins)){
+    plot_read_origins[i,] <- plot_read_origins[1,] - apply(plot_read_origins[2:i,],2,sum) 
+  }  
+}
+```
+
+```{r}
+barplot(plot_read_origins, las=2, col=1:nrow(plot_read_origins))
+legend("bottomright", legend=rownames(plot_read_origins), col=1:nrow(plot_read_origins), pch=15, , bg='white')
+```
 
 # Analyses preparations
 

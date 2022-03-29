@@ -8,6 +8,8 @@ annot:  "/scratch/project_2002561/MastitisChallenge/RNASeq-Analysis/Reference/Bo
 star-index:  "/scratch/project_2002561/MastitisChallenge/RNASeq-Analysis/Reference/STAR2.7.5a"                               # Path to the STAR index to be created
 report-script: "/scratch/project_2002561/pipeline/scripts/workflow-report.Rmd"
 local-scratch: $LOCAL_SCRATCH
+contamination-folder: "/scratch/project_2002561/MastitisChallenge/RNASeq-iSeqTestRun/Reference/Contamination"
+contamination-refs: ["GCF_000005845.2_ASM584v2_genomic.fna", "GCF_000013425.1_ASM1342v1_genomic.fna", "SILVA_138.1_LSURef_tax_silva.fasta"]
 
 params:
   fastp:
@@ -18,7 +20,8 @@ params:
   rsem:
     paired: "--paired-end"                                                      # For SE reads, set here ""
   star:
-    overhang: 149                                                                # Set this to bp-1 of a single read length
+    overhang: 149
+    limitGenomeGenerateRAM: 300647710720
   stringtie:
     tpm: 2
 singularity:

@@ -89,15 +89,16 @@ else:
                 gzip {wildcards.samples}_"$i"_R1.decontaminated.fastq
                 gzip {wildcards.samples}_"$i"_R2.decontaminated.fastq
                 
+                cp {wildcards.samples}_"$i"_R1.decontaminated.fastq.gz {wildcards.samples}_R1.decontaminated.fastq.gz &
+                wait
+                cp {wildcards.samples}_"$i"_R2.decontaminated.fastq.gz {wildcards.samples}_R2.decontaminated.fastq.gz &
+                wait
+                
                 tmpFastq=({params.project_folder}/{wildcards.samples}_"$i"_R1.decontaminated.fastq.gz {params.project_folder}/{wildcards.samples}_"$i"_R2.decontaminated.fastq.gz)
                 currentInput="${{tmpFastq[@]}}"
-                
-                finalFastq=$currentInput;
             done
 
             mkdir -p {params.project_folder}/FASTQ/DECONTAMINATED;
-            mv $finalFastq {params.project_folder}/FASTQ/DECONTAMINATED;
-            
             mv *decontaminated.fastq.gz {params.project_folder}/FASTQ/DECONTAMINATED;
             mv *decontaminated.fastq.wcl {params.project_folder}/FASTQ/DECONTAMINATED;
             
