@@ -14,6 +14,7 @@
 
 Development version 0.1.*:
 --------------------------------------------------------------------------------
+4: Decontamination works now properly
 3: Contamination statistics added to the final report
 2: Added the decontamination step
 1: Inital submission
