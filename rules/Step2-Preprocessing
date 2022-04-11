@@ -6,8 +6,8 @@ rule fastp_trim_reads:
         fastq1="%s/FASTQ/CONCATENATED/{samples}_R1.fastq.gz" % (config["project-folder"]),
         fastq2="%s/FASTQ/CONCATENATED/{samples}_R2.fastq.gz" % (config["project-folder"])
     output:
-        first=temp("%s/FASTQ/TRIMMED/{samples}_R1.trimmed.fastq.gz" % (config["project-folder"])),
-        second=temp("%s/FASTQ/TRIMMED/{samples}_R2.trimmed.fastq.gz" % (config["project-folder"]))
+        first="%s/FASTQ/TRIMMED/{samples}_R1.trimmed.fastq.gz" % (config["project-folder"]),
+        second="%s/FASTQ/TRIMMED/{samples}_R2.trimmed.fastq.gz" % (config["project-folder"])
     params:
         trim_front1=config["params"]["fastp"]["trim_front1"],
         trim_tail1=config["params"]["fastp"]["trim_tail1"],
