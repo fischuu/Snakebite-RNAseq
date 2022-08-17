@@ -14,6 +14,7 @@
 
 Development version 0.1.*:
 --------------------------------------------------------------------------------
+6: Bugfix, filenames
 5: Attribute type and feature type added for featureCounts
 4: Decontamination works now properly
 3: Contamination statistics added to the final report
