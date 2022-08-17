@@ -23,8 +23,6 @@ rule rsem_calculate_expressions:
          
          mv {wildcards.samples}* {params.outfolder}         
     """
-    
-# vim: set filetype=sh :
 
 rule featureCounts_quantify:
     """
@@ -41,7 +39,9 @@ rule featureCounts_quantify:
         "%s/benchmark/featureCounts/featureCounts_ref.{samples}.benchmark.tsv" % (config["project-folder"])
     threads: 20
     params:
-        outFolder="%s/FeatureCounts/Annot" % (config["project-folder"])
+        outFolder="%s/FeatureCounts/Annot" % (config["project-folder"]),
+        geneid=config["params"]["featurecounts"]["attributetype"],
+        type=config["params"]["featurecounts"]["featuretype"]
     singularity: "docker://biocontainers/subread:v1.6.3dfsg-1-deb_cv1"
     shell:"""
           mkdir -p {params.outFolder}
@@ -50,6 +50,8 @@ rule featureCounts_quantify:
                         -T {threads} \
                         -a {input.gtf} \
                         -o {output} \
+                        -g {params.geneid} \
+                        -t {params.type} \
                         {input.bam} 2> {log}
     """
 
@@ -68,7 +70,9 @@ rule featureCounts_quantify_merged:
         "%s/benchmark/featureCounts/featureCounts_merged.{samples}.benchmark.tsv" % (config["project-folder"])
     threads: 20
     params:
-        outFolder="%s/FeatureCounts/Stringtie" % (config["project-folder"])
+        outFolder="%s/FeatureCounts/Stringtie" % (config["project-folder"]),
+        geneid=config["params"]["featurecounts"]["attributetype"],
+        type=config["params"]["featurecounts"]["featuretype"]
     singularity: "docker://biocontainers/subread:v1.6.3dfsg-1-deb_cv1"
     shell:"""
           mkdir -p {params.outFolder}
@@ -77,5 +81,7 @@ rule featureCounts_quantify_merged:
                         -T {threads} \
                         -a {input.gtf} \
                         -o {output} \
+                        -g {params.geneid} \
+                        -t {params.type} \
                         {input.bam} 2> {log}
     """
