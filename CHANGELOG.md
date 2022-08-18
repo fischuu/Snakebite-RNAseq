@@ -14,6 +14,7 @@
 
 Development version 0.1.*:
 --------------------------------------------------------------------------------
+7: FeatureCounts merged attribute types fixed
 6: Bugfix, filenames
 5: Attribute type and feature type added for featureCounts
 4: Decontamination works now properly
