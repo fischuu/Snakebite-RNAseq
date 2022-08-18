@@ -25,8 +25,8 @@ wildcard_constraints:
 
 ##### Config autofile #####
 
-
-
+config["params"]["featurecounts"]["attributetype_merged"]="gene_id"
+config["params"]["featurecounts"]["featuretype_merged"]="transcript"
 
 ##### Functionm definitions #####
 
