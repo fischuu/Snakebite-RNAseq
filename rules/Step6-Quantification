@@ -71,8 +71,8 @@ rule featureCounts_quantify_merged:
     threads: 20
     params:
         outFolder="%s/FeatureCounts/Stringtie" % (config["project-folder"]),
-        geneid=config["params"]["featurecounts"]["attributetype"],
-        type=config["params"]["featurecounts"]["featuretype"]
+        geneid=config["params"]["featurecounts"]["attributetype_merged"],
+        type=config["params"]["featurecounts"]["featuretype_merged"]
     singularity: "docker://biocontainers/subread:v1.6.3dfsg-1-deb_cv1"
     shell:"""
           mkdir -p {params.outFolder}
