@@ -23,6 +23,11 @@ wildcard_constraints:
     rawsamples="|".join(rawsamples),
     samples="|".join(samples)
 
+##### Config autofile #####
+
+
+
+
 ##### Functionm definitions #####
 
 def make_fq_alignment_pairs(wildcards):
