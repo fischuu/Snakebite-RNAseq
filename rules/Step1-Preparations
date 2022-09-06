@@ -16,11 +16,18 @@ rule star_create_index:
         "%s/benchmark/STAR/createIndex.benchmark.tsv" % (config["project-folder"])
     threads:20
     params:
-       overhang=config["params"]["star"]["overhang"]
+       overhang=config["params"]["star"]["overhang"],
+       genomeSAindexNbases=config["params"]["star"]["genomeSAindexNbases"]
     singularity: config["singularity"]["star"]
     shell:"""
         echo "Number of threads used:" {threads}
-        STAR --runThreadN {threads} --runMode genomeGenerate --genomeDir {input.index} --genomeFastaFiles {input.fasta} --sjdbGTFfile {input.annot} --sjdbOverhang {params.overhang} 2> {log}
+        STAR --runThreadN {threads} \
+             --runMode genomeGenerate \
+             --genomeDir {input.index} \
+             --genomeFastaFiles {input.fasta} \
+             --sjdbGTFfile {input.annot} \
+             --genomeSAindexNbases {params.genomeSAindexNbases} \
+             --sjdbOverhang {params.overhang} 2> {log}
     """
 
 rule rsem_create_index:
