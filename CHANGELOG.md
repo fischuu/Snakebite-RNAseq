@@ -14,6 +14,7 @@
 
 Development version 0.1.*:
 --------------------------------------------------------------------------------
+* 9: Bugfix, -t option in rule featureCounts_quantify_merged
 * 8: Added to STAR index the parameter genomeSAindexNbases
 * 7: FeatureCounts merged attribute types fixed
 * 6: Bugfix, filenames
