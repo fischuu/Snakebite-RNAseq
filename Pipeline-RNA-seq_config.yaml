@@ -20,6 +20,7 @@ params:
   rsem:
     paired: "--paired-end"                                                      # For SE reads, set here ""
   star:
+    genomeSAindexNbases: 14
     overhang: 149
     limitGenomeGenerateRAM: 300647710720
   stringtie:
