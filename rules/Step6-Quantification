@@ -81,7 +81,7 @@ rule featureCounts_quantify_merged:
                         -T {threads} \
                         -a {input.gtf} \
                         -o {output} \
-                        -g {params.geneid} \
+                        -g transcript_id \
                         -t transcript \
                         {input.bam} 2> {log}
     """
