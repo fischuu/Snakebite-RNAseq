@@ -5,9 +5,8 @@ rule star_create_index:
     Create genome index for reference genome (STAR).
     """
     input:
-        index="%s" % (config["star-index"]),
-        fasta="%s" % (config["genome"]),
-        annot="%s" % (config["annot"])
+        fasta=config["genome"],
+        annot=config["annot"]
     output:
         "%s/chrName.txt" % (config["star-index"])
     log:
@@ -17,13 +16,15 @@ rule star_create_index:
     threads:20
     params:
        overhang=config["params"]["star"]["overhang"],
-       genomeSAindexNbases=config["params"]["star"]["genomeSAindexNbases"]
+       genomeSAindexNbases=config["params"]["star"]["genomeSAindexNbases"],
+       starfolder=config["star-index"]
     singularity: config["singularity"]["star"]
     shell:"""
-        echo "Number of threads used:" {threads}
+        mkdir -p {params.starfolder}
+       
         STAR --runThreadN {threads} \
              --runMode genomeGenerate \
-             --genomeDir {input.index} \
+             --genomeDir {params.starfolder} \
              --genomeFastaFiles {input.fasta} \
              --sjdbGTFfile {input.annot} \
              --genomeSAindexNbases {params.genomeSAindexNbases} \
@@ -57,8 +58,8 @@ rule Concatenate_lanes:
     Concatenate the demultiplexed fastq files (BASH).
     """
     input:
-      R1=expand("%s/FASTQ/RAW/{rawsamples}_R1_001.fastq.gz" % (config["project-folder"]), rawsamples=rawsamples),
-      R2=expand("%s/FASTQ/RAW/{rawsamples}_R2_001.fastq.gz" % (config["project-folder"]), rawsamples=rawsamples)
+      R1=get_fastq_for_concatenating_read1,
+      R2=get_fastq_for_concatenating_read2
     output:
       R1=temp("%s/FASTQ/CONCATENATED/{samples}_R1.fastq.gz" % (config["project-folder"])),
       R2=temp("%s/FASTQ/CONCATENATED/{samples}_R2.fastq.gz" % (config["project-folder"]))
