@@ -17,6 +17,7 @@ rule star_create_index:
     params:
        overhang=config["params"]["star"]["overhang"],
        genomeSAindexNbases=config["params"]["star"]["genomeSAindexNbases"],
+       sparseD=config["params"]["star"]["sparseD"],
        starfolder=config["star-index"]
     singularity: config["singularity"]["star"]
     shell:"""
@@ -28,6 +29,7 @@ rule star_create_index:
              --genomeFastaFiles {input.fasta} \
              --sjdbGTFfile {input.annot} \
              --genomeSAindexNbases {params.genomeSAindexNbases} \
+             --genomeSAsparseD {params.sparseD} \
              --sjdbOverhang {params.overhang} 2> {log}
     """
 

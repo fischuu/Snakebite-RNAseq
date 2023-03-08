@@ -40,12 +40,12 @@ knitr::opts_chunk$set(echo = FALSE,
                       cache.lazy = FALSE,
                       dev = c('png', 'pdf'),
                       fig.align = 'center', fig.height = 5, fig.width = 8.5)
-if(!is.element("snakemake",ls())){
-  projFolder <- "/scratch/project_2002561/MastitisChallenge/RNASeq-iSeqTestRun/"
-  pipelineFolder <- "/scratch/project_2002561/pipeline/"
-  pipelineConfig <- "/scratch/project_2002561/MastitisChallenge/RNASeq-iSeqTestRun/Pipeline-RNA-seq_config.yaml"
-  refAnnot.file <- "/scratch/project_2002561/MastitisChallenge/RNASeq-iSeqTestRun/Reference/Bos_taurus.ARS-UCD1.2.100.gtf"
+
+sampleInfoAvail <- FALSE
+if(sampleinfo.file!=""){
+  sampleInfoAvail <- TRUE
 }
+
 ```
 
 ```{r import config file}
@@ -175,24 +175,35 @@ if(file.exists(file.path(projFolder,"workflow.png"))) knitr::include_graphics(fi
 # Basic stats
 
 ```{r get pipeline version}
-pipeSMK <- readLines(file.path(pipelineFolder,"Snakefile-Pipeline-RNA-seq.smk"))
+pipeSMK <- readLines(file.path(pipelineFolder,"Snakebite-RNAseq.smk"))
 pipeVersion <- gsub("##### Version: ","",pipeSMK[grep("##### Version:", pipeSMK)])
 ```
 
-```{r import barcodesID, results="asis"}
-rawsamples <- read.table(file.path(projFolder, "rawsamples"))
-samples <- read.table(file.path(projFolder, "samples"))
-sampleInfo <- read.table(file.path(projFolder, "sampleInfo.txt"), header=TRUE)
+```{r import sample inforamtion, results="asis"}
+samplesheet <- read.table(samplesheet.file, header=TRUE)
+rawsamples <- unique(samplesheet$rawsample)
+samples <- unique(samplesheet$sample_name)
+sampleInfo <- NULL
+numberGroupingInformation <- 0
+groupingNames <- "No grouping information provided"
+
+if(sampleInfoAvail){
+  sampleInfo <- read.table(sampleinfo.file, header=TRUE)
+  numberGroupingInformation <- ncol(sampleInfo)-1
+  groupingNames <- paste(colnames(sampleInfo)[-1],collapse=", ")
+}
+
+  
 
 out <- data.frame(c("Number of raw-samples",
                     "Number of samples (after concatenating)",
                     "No. of grouping information",
                     "Used Groups",
                     "Pipeline version"),
-                  c(nrow(rawsamples),
-                    nrow(samples),
-                    ncol(sampleInfo)-1,
-                    paste(colnames(sampleInfo)[-1],collapse=", "),
+                  c(length(rawsamples),
+                    length(samples),
+                    numberGroupingInformation,
+                    groupingNames,
                     pipeVersion))
 
 out_html <- knitr::kable(out, col.names = NULL, "html")
@@ -415,8 +426,8 @@ plotFastQCFeature(conFastQC.R1, conFastQC.R2, feature="Total.Sequences")
 tmp <- conFastQC.R1$Total.Sequences
 names(tmp) <- conFastQC.R1$Sample
 for(i in 1:length(tmp)){
-  tmpPos <- grep(samples[i,1],names(tmp))
-  names(tmp)[tmpPos] <- samples[i,1] 
+  tmpPos <- grep(paste0("^", samples[i]),names(tmp))
+  names(tmp)[tmpPos] <- samples[i] 
 }
 read_origins <- t(as.matrix(tmp))
 rownames(read_origins)[1] <- "raw_reads"
@@ -551,8 +562,8 @@ plotFastQCFeature(trimmedFastQC.R1, trimmedFastQC.R2, feature="Total.Sequences")
 tmp <- trimmedFastQC.R1$Total.Sequences
 names(tmp) <- trimmedFastQC.R1$Sample
 for(i in 1:length(tmp)){
-  tmpPos <- grep(samples[i,1],names(tmp))
-  names(tmp)[tmpPos] <- samples[i,1] 
+  tmpPos <- grep(paste0("^", samples[i]),names(tmp))
+  names(tmp)[tmpPos] <- samples[i] 
 }
 tmp <- t(as.matrix(tmp))
 read_origins <- rbind(read_origins, tmp)
@@ -747,17 +758,20 @@ for(i in 2:length(tmp)){
   rsem.transcripts <- merge(rsem.transcripts, rsem.transcripts.tmp, by="transcript_id")
 }
 
-if(sum(colnames(rsem.transcripts[,-1])==paste0(sampleInfo[,1],"-TPM"))!=nrow(sampleInfo)){
-  warning("Sample quantification order does not match the sample metainformation order!!! Check that!!!")
-  
-  sampleInfo.bak <- sampleInfo
-  
-  for(i in 2:ncol(rsem.transcripts)){
-    newOrder <- which(colnames(rsem.transcripts)[i]==paste0(sampleInfo.bak[,1],"-TPM"))
-    sampleInfo[i-1,] <- sampleInfo.bak[newOrder,]
-  }
-  
-} 
+if(sampleInfoAvail){
+  if(sum(colnames(rsem.transcripts[,-1])==paste0(sampleInfo[,1],"-TPM"))!=nrow(sampleInfo)){
+    warning("Sample quantification order does not match the sample metainformation order!!! Check that!!!")
+    
+    sampleInfo.bak <- sampleInfo
+    
+    for(i in 2:ncol(rsem.transcripts)){
+      newOrder <- which(colnames(rsem.transcripts)[i]==paste0(sampleInfo.bak[,1],"-TPM"))
+      sampleInfo[i-1,] <- sampleInfo.bak[newOrder,]
+    }
+    
+  }  
+}
+
 ```
 
 Remove low expressed features
@@ -813,8 +827,8 @@ fc.expr.star <- merge(fc.in[[1]]$expValues, fc.in[[2]]$expValues, by="Geneid")
 for(i in 3:length(fc.files)){
   fc.expr.star <- merge(fc.expr.star, fc.in[[i]]$expValues, by="Geneid")
 }
-colnames(fc.expr.star) <- sub(".*?Reference.", "",colnames(fc.expr.star))
-colnames(fc.expr.star) <- sub("_reference_star.bam", "",colnames(fc.expr.star))
+colnames(fc.expr.star) <- sub(".*?BAM.", "",colnames(fc.expr.star))
+colnames(fc.expr.star) <- sub(".bam", "",colnames(fc.expr.star))
 ```
 Now get the counts per biotype per sample
 
@@ -889,7 +903,7 @@ names(expr.PCA$x[,1])[which(expr.PCA$x[,1]>0)]
 ```
 
 ```{r, results="asis"}
-if(ncol(sampleInfo)>1){
+if(sampleInfoAvail){
 for(i in 2:ncol(sampleInfo)){
   tmpTitle <- paste("### 3C: ",colnames(sampleInfo)[i],"\n")
   cat(sprintf(tmpTitle))
@@ -908,7 +922,7 @@ pairs(expr.PCA$x[,1:cols])
 ```
 
 ```{r, results="asis"}
-if(ncol(sampleInfo)>1){
+if(sampleInfoAvail){
 for(i in 2:ncol(sampleInfo)){
   tmpTitle <- paste("### 10C: ",colnames(sampleInfo)[i],"\n")
   cat(sprintf(tmpTitle))
@@ -925,7 +939,7 @@ for(i in 2:ncol(sampleInfo)){
 ```{r, results="asis"}
 cols <- min(ncol(expr.PCA$x),10)
 FOBI <- ics(expr.PCA$x[,1:cols])
-if(ncol(sampleInfo)>1){
+if(sampleInfoAvail){
 for(i in 2:ncol(sampleInfo)){
   tmpTitle <- paste("### ",colnames(sampleInfo)[i],"\n")
   cat(sprintf(tmpTitle))
@@ -946,7 +960,7 @@ for(i in 2:ncol(sampleInfo)){
 cols <- min(ncol(expr.PCA$x),10)
 TSNEout <- tsne(expr.PCA$x[,1:cols], k=5)
 
-if(ncol(sampleInfo)>1){
+if(sampleInfoAvail){
 for(i in 2:ncol(sampleInfo)){
   tmpTitle <- paste("### ",colnames(sampleInfo)[i],"\n")
   cat(sprintf(tmpTitle))
@@ -970,7 +984,7 @@ KPCAres <- kpca(expr.PCA$x[,1:cols])
 ```
 
 ```{r, results="asis"}
-if(ncol(sampleInfo)>1){
+if(sampleInfoAvail){
   for(i in 2:ncol(sampleInfo)){
       tmpTitle <- paste("### ",colnames(sampleInfo)[i],"\n")
       cat(sprintf(tmpTitle))
@@ -1006,7 +1020,7 @@ lleres <- lle(expr.PCA$x[,1:cols], m=7, k=17, v=0.99)
 ```
 
 ```{r, results="asis"}
-  if(ncol(sampleInfo)>1){
+  if(sampleInfoAvail){
   for(i in 2:ncol(sampleInfo)){
       tmpTitle <- paste("### ",colnames(sampleInfo)[i],"\n")
       cat(sprintf(tmpTitle))

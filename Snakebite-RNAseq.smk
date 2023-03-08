@@ -38,6 +38,12 @@ if(config["rawdata-folder"][0]!='/'):
 if(config["samplesheet-file"][0]!='/'):
     config["samplesheet-file"] = config["project-folder"] + '/' + config["samplesheet-file"]
 
+if config["sampleinfo-file"] == "":
+    pass
+else:
+    if(config["sampleinfo-file"][0]!='/'):
+        config["sampleinfo-file"] = config["project-folder"] + '/' + config["sampleinfo-file"]
+
 if(config["genome"][0]!='/'):
     config["genome"] = config["project-folder"] + '/' + config["genome"]
 
@@ -175,8 +181,6 @@ rule all:
       # Step1-Preparations
         "%s/chrName.txt" % (config["star-index"]),
         "%s/Reference/RSEM.chrlist" % (config["project-folder"]),
-        expand("%s/FASTQ/CONCATENATED/{samples}_R1.fastq.gz" % (config["project-folder"]), samples=samples),
-        expand("%s/FASTQ/CONCATENATED/{samples}_R2.fastq.gz" % (config["project-folder"]), samples=samples),
       # Step2-Preprocessing
         "%s/chrName.txt" % (config["star-index"]),
         expand("%s/FASTQ/TRIMMED/{samples}_R1.trimmed.fastq.gz" % (config["project-folder"]), samples=samples),
@@ -202,16 +206,12 @@ rule all:
 
 rule preparations:
     input:
-        "%s/chrName.txt" % (config["star-index"]),
-        expand("%s/FASTQ/CONCATENATED/{samples}_R1.fastq.gz" % (config["project-folder"]), samples=samples),
-        expand("%s/FASTQ/CONCATENATED/{samples}_R2.fastq.gz" % (config["project-folder"]), samples=samples)
+        "%s/chrName.txt" % (config["star-index"])
 
 rule meta:
     input:
       # Step1-Preparations
         "%s/chrName.txt" % (config["star-index"]),
-        expand("%s/FASTQ/CONCATENATED/{samples}_R1.fastq.gz" % (config["project-folder"]), samples=samples),
-        expand("%s/FASTQ/CONCATENATED/{samples}_R2.fastq.gz" % (config["project-folder"]), samples=samples),
       # Step2-Preprocessing
         "%s/chrName.txt" % (config["star-index"]),
         expand("%s/FASTQ/TRIMMED/{samples}_R1.trimmed.fastq.gz" % (config["project-folder"]), samples=samples),

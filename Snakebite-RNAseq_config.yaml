@@ -1,9 +1,10 @@
 project-folder: "/scratch/project_2002561/MastitisChallenge/RNASeq-Analysis"                   
 pipeline-folder: "/scratch/project_2002561/pipeline"
-pipeline-config: "Pipeline-RNA-seq_config.yaml"
-server-config: "Pipeline-RNA-seq_server-config.yaml"
+pipeline-config: "Snakebite-RNAseq_config.yaml"
+server-config: "Snakebite-RNAseq_server-config.yaml"
 rawdata-folder: "FASTQ/RAW"
 samplesheet-file: "samplesheet.tsv"
+sampleinfo-file: ""
 genome: "Reference/Bos_taurus.ARS-UCD1.2.dna.toplevel.fa"      
 annot:  "Reference/Bos_taurus.ARS-UCD1.2.100.gtf"
 local-scratch: $LOCAL_SCRATCH
@@ -23,6 +24,7 @@ params:
     genomeSAindexNbases: 14
     overhang: 149
     limitGenomeGenerateRAM: 300647710720
+    sparseD: 1                  # For large genomes, set this value higher
   stringtie:
     tpm: 2
   featurecounts:

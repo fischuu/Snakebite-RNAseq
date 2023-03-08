@@ -16,7 +16,7 @@ snakemake -s $pipelineFolder/Snakebite-RNAseq.smk \
 snakemake -s $pipelineFolder/Snakebite-RNAseq.smk \
           -j 300 \
           --use-singularity \
-          --singularity-args "-B /scratch:/scratch" \
+          --singularity-args "-B /scratch:/scratch,/users" \
           --configfile $projectFolder/Snakebite-RNAseq_config.yaml \
           --latency-wait 60 \
           --cluster-config $projectFolder/Snakebite-RNAseq_server_config.yaml \
