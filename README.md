@@ -1,4 +1,4 @@
-# Pipeline-RNA-seq
+# Snakebite-RNAseq
 Standard RNA-seq snakemake pipeline.
 
 ## Installation
@@ -11,7 +11,7 @@ wget ...
 To clone into the pipeline type
 
 ```
-git clone git@github.com:fischuu/Pipeline-RNA-seq.git
+git clone git@github.com:fischuu/Snakebite-RNAseq.git
 ```
 ## Usage
 The pipeline is configured in the file `...` with the following required parameters.
