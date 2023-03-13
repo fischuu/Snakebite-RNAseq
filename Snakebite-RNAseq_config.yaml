@@ -25,6 +25,8 @@ params:
     overhang: 149
     limitGenomeGenerateRAM: 300647710720
     sparseD: 1                  # For large genomes, set this value higher
+    genomeChrBinNbits: 18       # Reduce this for larger genomes
+    mode: ""                    # Set this to "meta" for metatranscriptome studies, to run STAR without annotation
   stringtie:
     tpm: 2
   featurecounts:

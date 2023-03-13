@@ -10,10 +10,12 @@
         be good to report any index that was created successfully and then only
         create the output file in case that all indices were created
 
-#### UPDATES
-
-Development version 0.1.*:
+0.1.*: UPDATES
 --------------------------------------------------------------------------------
+* 13: Adjusted the output files from STAR alignments for metatranscriptomics
+* 12: Added the 'mode' option to account for metagenomic studies
+* 11: Option limitGenomeGenerateRAM added to the STAR genome builder
+* 10: Added the genomeChrBinNbits option to STAR, to account for larger genomes
 * 9: Bugfix, -t option in rule featureCounts_quantify_merged
 * 8: Added to STAR index the parameter genomeSAindexNbases
 * 7: FeatureCounts merged attribute types fixed

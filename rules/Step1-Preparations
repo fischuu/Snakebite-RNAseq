@@ -17,20 +17,40 @@ rule star_create_index:
     params:
        overhang=config["params"]["star"]["overhang"],
        genomeSAindexNbases=config["params"]["star"]["genomeSAindexNbases"],
+       genomeChrBinNbits=config["params"]["star"]["genomeChrBinNbits"],
+       limitGenomeGenerateRAM=config["params"]["star"]["limitGenomeGenerateRAM"],
        sparseD=config["params"]["star"]["sparseD"],
+       mode=config["params"]["star"]["mode"],
        starfolder=config["star-index"]
     singularity: config["singularity"]["star"]
     shell:"""
         mkdir -p {params.starfolder}
        
-        STAR --runThreadN {threads} \
-             --runMode genomeGenerate \
-             --genomeDir {params.starfolder} \
-             --genomeFastaFiles {input.fasta} \
-             --sjdbGTFfile {input.annot} \
-             --genomeSAindexNbases {params.genomeSAindexNbases} \
-             --genomeSAsparseD {params.sparseD} \
-             --sjdbOverhang {params.overhang} 2> {log}
+        if [ "{params.mode}" = "meta" ];
+        then
+
+          STAR --runThreadN {threads} \
+               --runMode genomeGenerate \
+               --genomeDir {params.starfolder} \
+               --genomeFastaFiles {input.fasta} \
+               --limitGenomeGenerateRAM {params.limitGenomeGenerateRAM} \
+               --genomeSAindexNbases {params.genomeSAindexNbases} \
+               --genomeChrBinNbits {params.genomeChrBinNbits} \
+               --genomeSAsparseD {params.sparseD} 2> {log}
+
+        else
+          
+          STAR --runThreadN {threads} \
+               --runMode genomeGenerate \
+               --genomeDir {params.starfolder} \
+               --genomeFastaFiles {input.fasta} \
+               --sjdbGTFfile {input.annot} \
+               --limitGenomeGenerateRAM {params.limitGenomeGenerateRAM} \
+               --genomeSAindexNbases {params.genomeSAindexNbases} \
+               --genomeChrBinNbits {params.genomeChrBinNbits} \
+               --genomeSAsparseD {params.sparseD} \
+               --sjdbOverhang {params.overhang} 2> {log}
+        fi
     """
 
 rule rsem_create_index:

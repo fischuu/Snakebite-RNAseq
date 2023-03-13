@@ -17,7 +17,8 @@ rule star_map_reads:
     threads: 20
     params:
         index=config["star-index"],
-        annotation=config["annot"]
+        annotation=config["annot"],
+        mode=config["params"]["star"]["mode"]
     singularity: config["singularity"]["star"]
     shell:"""
         mkdir -p {output.dir};
@@ -26,6 +27,27 @@ rule star_map_reads:
 
       	[ ! -d \"{output.dir}\" ] && mkdir {output.dir}
 
+
+        if [ "{params.mode}" = "meta" ];
+        then
+
+        STAR --genomeDir {params.index} \
+            --readFilesIn {input.fastq} \
+            --readFilesCommand zcat \
+            --outSAMunmapped Within \
+            --outSAMtype BAM SortedByCoordinate \
+            --outSAMattrIHstart 0 \
+            --outFilterIntronMotifs RemoveNoncanonical \
+            --runThreadN {threads} \
+            --alignSoftClipAtReferenceEnds No \
+            --outFileNamePrefix {wildcards.samples}_ 2> {log};
+
+        mv {wildcards.samples}_Aligned.sortedByCoord.out.bam {output.file}
+        mv {wildcards.samples}_Log.final.out {wildcards.samples}_Log.progress.out {wildcards.samples}_Log.out {output.dir}
+
+
+        else
+          
         STAR --genomeDir {params.index} \
             --readFilesIn {input.fastq} \
             --readFilesCommand zcat \
@@ -44,4 +66,7 @@ rule star_map_reads:
 
         mv {wildcards.samples}_Aligned.sortedByCoord.out.bam {output.file}
         mv {wildcards.samples}_Log.final.out {wildcards.samples}_Log.progress.out {wildcards.samples}_Signal.UniqueMultiple.str2.out.bg {wildcards.samples}_Signal.Unique.str2.out.bg {wildcards.samples}_Aligned.toTranscriptome.out.bam {wildcards.samples}_Log.out {wildcards.samples}_Signal.UniqueMultiple.str1.out.bg {wildcards.samples}_Signal.Unique.str1.out.bg {wildcards.samples}_SJ.out.tab {output.dir}
+
+        fi
+
     """
