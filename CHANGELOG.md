@@ -12,6 +12,7 @@
 
 0.1.*: UPDATES
 --------------------------------------------------------------------------------
+* 14: Output file dependencied from STAR alignments for metatranscriptomics further adjusted
 * 13: Adjusted the output files from STAR alignments for metatranscriptomics
 * 12: Added the 'mode' option to account for metagenomic studies
 * 11: Option limitGenomeGenerateRAM added to the STAR genome builder
