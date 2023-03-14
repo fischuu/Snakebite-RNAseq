@@ -30,6 +30,6 @@ params:
   stringtie:
     tpm: 2
   featurecounts:
-    attributetype: "gene_id"
-    featuretype: "exon"
+    attributetype: "gene_id"    # Option for RNA-seq: "gene_id", for metagenomics: "ID" (If output of Snakebite-Metagenomics is used as input files)
+    featuretype: "exon"         # Options are "exon", "transcript" and "gene". For Metagenomics "CDS"
 
