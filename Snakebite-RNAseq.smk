@@ -12,8 +12,8 @@ report: "report/workflow.rst"
 ##### RNASeq-snakemake pipeline #####
 ##### Daniel Fischer (daniel.fischer@luke.fi)
 ##### Natural Resources Institute Finland (Luke)
-##### Version: 0.1.14
-version = "0.1.14"
+##### Version: 0.1.15
+version = "0.1.15"
 
 ##### set minimum snakemake version #####
 #min_version("6.0")
