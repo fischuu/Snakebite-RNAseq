@@ -34,7 +34,7 @@ rule star_map_reads:
             --readFilesIn {input.fastq} \
             --readFilesCommand zcat \
             --outSAMunmapped Within \
-            --outSAMtype BAM SortedByCoordinate \
+            --outSAMtype BAM Unsorted SortedByCoordinate \
             --outSAMattrIHstart 0 \
             --outFilterIntronMotifs RemoveNoncanonical \
             --runThreadN {threads} \
@@ -42,7 +42,7 @@ rule star_map_reads:
             --outFileNamePrefix {wildcards.samples}_ 2> {log};
 
         mv {wildcards.samples}_Aligned.sortedByCoord.out.bam {output.file}
-        mv {wildcards.samples}_Log.final.out {wildcards.samples}_Log.progress.out {wildcards.samples}_Log.out {output.dir}
+        mv {wildcards.samples}_Aligned.out.bam {wildcards.samples}_Log.final.out {wildcards.samples}_Log.progress.out {wildcards.samples}_Log.out {wildcards.samples}_SJ.out.tab {output.dir}
 
 
         else

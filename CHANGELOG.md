@@ -10,8 +10,13 @@
         be good to report any index that was created successfully and then only
         create the output file in case that all indices were created
 
+0.2 : Release Version
+--------------------------------------------------------------------------------
+
 0.1.*: UPDATES
 --------------------------------------------------------------------------------
+* 17: Added the {wildcards.samples}_Aligned.out.bam output to the rule rule star_map_reads
+* 16: STAR aligned reports now also unsorted SAM files for metatranscriptomics
 * 15: Config options better explained
 * 14: Output file dependencied from STAR alignments for metatranscriptomics further adjusted
 * 13: Adjusted the output files from STAR alignments for metatranscriptomics
