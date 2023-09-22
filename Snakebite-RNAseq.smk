@@ -198,7 +198,7 @@ rule all:
       # Step5-TranscriptomeAssembly
         "%s/Stringtie/merged_STRG.gtf" % (config["project-folder"]),
       # Step6-Quantification
-        expand("%s/RSEM/{samples}.genes.results" % (config["project-folder"]), samples=samples),
+ #       expand("%s/RSEM/{samples}.genes.results" % (config["project-folder"]), samples=samples),
         expand("%s/FeatureCounts/Annot/{samples}_fc.txt" % (config["project-folder"]), samples=samples),
         expand("%s/FeatureCounts/Stringtie/{samples}_fc.txt" % (config["project-folder"]), samples=samples),
       # Step7-Reporting
