@@ -180,7 +180,7 @@ rule all:
     input:
       # Step1-Preparations
         "%s/chrName.txt" % (config["star-index"]),
-        "%s/Reference/RSEM.chrlist" % (config["project-folder"]),
+#        "%s/Reference/RSEM.chrlist" % (config["project-folder"]),
       # Step2-Preprocessing
         "%s/chrName.txt" % (config["star-index"]),
         expand("%s/FASTQ/TRIMMED/{samples}_R1.trimmed.fastq.gz" % (config["project-folder"]), samples=samples),
@@ -198,7 +198,7 @@ rule all:
       # Step5-TranscriptomeAssembly
         "%s/Stringtie/merged_STRG.gtf" % (config["project-folder"]),
       # Step6-Quantification
-        expand("%s/RSEM/{samples}.genes.results" % (config["project-folder"]), samples=samples),
+#        expand("%s/RSEM/{samples}.genes.results" % (config["project-folder"]), samples=samples),
         expand("%s/FeatureCounts/Annot/{samples}_fc.txt" % (config["project-folder"]), samples=samples),
         expand("%s/FeatureCounts/Stringtie/{samples}_fc.txt" % (config["project-folder"]), samples=samples),
       # Step7-Reporting

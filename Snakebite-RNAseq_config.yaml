@@ -22,7 +22,7 @@ params:
     paired: "--paired-end"                                                      # For SE reads, set here ""
   star:
     genomeSAindexNbases: 14
-    overhang: 149
+    overhang: 74
     limitGenomeGenerateRAM: 300647710720
     sparseD: 1                  # For large genomes, set this value higher
     genomeChrBinNbits: 18       # Reduce this for larger genomes
