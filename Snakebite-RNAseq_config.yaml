@@ -14,7 +14,7 @@ contamination-refs: ["GCF_000005845.2_ASM584v2_genomic.fna", "GCF_000013425.1_AS
 
 params:
   fastp:
-    trim_front1: 12
+    trim_front1: 0
     trim_tail1: 0
     trim_front2: 0
     trim_tail2: 0
@@ -32,4 +32,5 @@ params:
   featurecounts:
     attributetype: "gene_id"    # Option for RNA-seq: "gene_id", for metagenomics: "ID" (If output of Snakebite-Metagenomics is used as input files)
     featuretype: "exon"         # Options are "exon", "transcript" and "gene". For Metagenomics "CDS"
+    strandtype: "1"                 # Options are "0" (unstranded) "1" (stranded) "2" (reverse stranded)
 

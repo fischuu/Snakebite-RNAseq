@@ -707,7 +707,7 @@ if(decontamination_active){
   colnames(decon.values) <- as.vector(as.matrix(samples))
   rownames(decon.values) <- contamination_references
   for(i in 1:length(contamination_references)){
-    for(j in 1:nrow(samples)){
+    for(j in 1:length(samples)){
       decon.values[i,j] <- read.table(file.path(projFolder, "FASTQ", "DECONTAMINATED", paste0(as.vector(as.matrix(samples))[j],"_",contamination_references[i],"_R1.decontaminated.fastq.wcl")))[1,1]
     }
   }
@@ -744,7 +744,7 @@ legend("bottomright", legend=rownames(plot_read_origins), col=1:nrow(plot_read_o
 ## Quantifications (RSEM)
 We import the transcript quantification from RSEM and base the PCA plots on those
 
-```{r, warning=FALSE}
+```{r, warning=FALSE, eval=FALSE}
 tmp <- list.files(file.path(projFolder,"RSEM"), pattern="*.isoforms.results",)
 rsem.transcripts <- fread(file.path(projFolder,"RSEM", tmp[1]))
 rsem.transcripts <- rsem.transcripts[,c("transcript_id", "TPM")]
@@ -776,13 +776,13 @@ if(sampleInfoAvail){
 
 Remove low expressed features
 
-```{r}
+```{r, eval=FALSE}
 rsem.transcripts.meanexp <- apply(rsem.transcripts[,-1],1,mean)
 rsem.transcripts <- rsem.transcripts[rsem.transcripts.meanexp>1,]
 ```
 
 Now we create the quantile normalized expression matrix. That way we rely only on ranks, not on the true expressions, in fact.
-```{r}
+```{r, eval=FALSE}
 # Determine the ranks per sample
   rsem.transcripts.rank <- apply(rsem.transcripts[,-1],2,rank,ties.method="min")
 # Sort the observations 
@@ -829,6 +829,9 @@ for(i in 3:length(fc.files)){
 }
 colnames(fc.expr.star) <- sub(".*?BAM.", "",colnames(fc.expr.star))
 colnames(fc.expr.star) <- sub(".bam", "",colnames(fc.expr.star))
+
+fc.expression <- as.matrix(fc.expr.star[,-1])
+rownames(fc.expression) <- fc.expr.star[,1]
 ```
 Now get the counts per biotype per sample
 
@@ -866,18 +869,19 @@ kable_styling(out_html, "striped", position = "left")
 # Clustering
 
 ## Hierarchical Clustering
-First we perform a hierarchical clustering, using the euclidean distances of the RSEM transcript values as distance measure
+First we perform a hierarchical clustering, using the euclidean distances of the FC counts values as distance measure
 
 ```{r}
 #rsem.transcripts.dist <- dist(as.matrix(t(rsem.transcripts[,-1])))
-rsem.transcripts.dist <- as.dist(1-cor(as.matrix(rsem.transcripts[,-1])))
+#rsem.transcripts.dist <- as.dist(1-cor(as.matrix(rsem.transcripts[,-1])))
+rsem.transcripts.dist <- as.dist(1-cor(as.matrix(fc.expression)))
 hc <- hclust(rsem.transcripts.dist)           
 plot(hc)  
 ```
 
 And the same for the quantile normalised RSEM transcript values
 
-```{r}
+```{r,eval=FALSE}
 #rsem.transcripts.qn.dist <- dist(as.matrix(t(rsem.transcripts.qn)))
 rsem.transcripts.qn.dist <- as.dist(1-cor(as.matrix(rsem.transcripts.qn)))
 hc <- hclust(rsem.transcripts.qn.dist)           
@@ -888,7 +892,7 @@ plot(hc)
 
 ## PCA
 ```{r performPCA}
-expr.PCA <- prcomp(t(rsem.transcripts[,-1]))
+expr.PCA <- prcomp(t(fc.expression))
 ```
 
 This is just the plain PCA, without using any colouring schemes.

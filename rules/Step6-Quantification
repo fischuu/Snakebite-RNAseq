@@ -41,7 +41,8 @@ rule featureCounts_quantify:
     params:
         outFolder="%s/FeatureCounts/Annot" % (config["project-folder"]),
         geneid=config["params"]["featurecounts"]["attributetype"],
-        type=config["params"]["featurecounts"]["featuretype"]
+        type=config["params"]["featurecounts"]["featuretype"],
+        strand=config["params"]["featurecounts"]["strandtype"]
     singularity: "docker://biocontainers/subread:v1.6.3dfsg-1-deb_cv1"
     shell:"""
           mkdir -p {params.outFolder}
@@ -52,6 +53,7 @@ rule featureCounts_quantify:
                         -o {output} \
                         -g {params.geneid} \
                         -t {params.type} \
+                        -s {params.strand} \
                         {input.bam} 2> {log}
     """
 
@@ -72,7 +74,8 @@ rule featureCounts_quantify_merged:
     params:
         outFolder="%s/FeatureCounts/Stringtie" % (config["project-folder"]),
         geneid=config["params"]["featurecounts"]["attributetype_merged"],
-        type=config["params"]["featurecounts"]["featuretype_merged"]
+        type=config["params"]["featurecounts"]["featuretype_merged"],
+        strand=config["params"]["featurecounts"]["strandtype"]
     singularity: "docker://biocontainers/subread:v1.6.3dfsg-1-deb_cv1"
     shell:"""
           mkdir -p {params.outFolder}
@@ -83,5 +86,6 @@ rule featureCounts_quantify_merged:
                         -o {output} \
                         -g transcript_id \
                         -t transcript \
+                        -s {params.strand} \
                         {input.bam} 2> {log}
     """
