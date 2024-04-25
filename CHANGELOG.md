@@ -10,6 +10,10 @@
         be good to report any index that was created successfully and then only
         create the output file in case that all indices were created
 
+0.3.*: UPDATES
+--------------------------------------------------------------------------------
+1: Create now a RESULTS folder and write the fc_counts.tsv object into it from the final report.
+
 0.2 : Release Version
 --------------------------------------------------------------------------------
 

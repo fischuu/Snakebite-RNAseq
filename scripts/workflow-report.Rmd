@@ -248,16 +248,20 @@ plotFastQCFeature(rawFastQC.R1, rawFastQC.R2, feature="total_deduplicated_percen
 abline(h=50, lty="dotted", col="red")
 ```
 
-A list of samples over a certain threshold (>50%)
+The data in table format
 
 ```{r table samples duplication under threshold raw}
 tmp <- cbind(rawFastQC.R1$Sample,rawFastQC.R1["total_deduplicated_percentage"])
-tmp <- tmp[tmp[,2]>50,]
-if(nrow(tmp)>0){
-rownames(tmp) <- 1:nrow(tmp)
-colnames(tmp) <- c("Rawsample", "Total deduplicated percentage")
 
-datatable(tmp)
+if(nrow(tmp)>0){
+  rownames(tmp) <- 1:nrow(tmp)
+  colnames(tmp) <- c("Sample", "Total deduplicated percentage")
+  
+  datatable(tmp, extensions = 'Buttons',
+            options = list(dom = 'Blfrtip',
+                           buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+                           lengthMenu = list(c(10,25,50,-1),
+                                             c(10,25,50,"All"))))
 }
 ```
 
@@ -274,12 +278,15 @@ A list of samples under a certain threshold (<30%)
 
 ```{r table samples GC content}
 tmp <- cbind(rawFastQC.R1$Sample,rawFastQC.R1["X.GC"])
-tmp <- tmp[tmp[,2]<30,]
 if(nrow(tmp)>0){
   rownames(tmp) <- 1:nrow(tmp)
-  colnames(tmp) <- c("Rawsample", "GC content")
-  #knitr::kable(tmp) %>% kable_styling
-  datatable(tmp)
+  colnames(tmp) <- c("Sample", "GC content")
+  
+  datatable(tmp, extensions = 'Buttons',
+            options = list(dom = 'Blfrtip',
+                           buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+                           lengthMenu = list(c(10,25,50,-1),
+                                             c(10,25,50,"All"))))
 }
 ```
 
@@ -302,12 +309,15 @@ th <- tmp*0.9
 
 tmp <- cbind(rawFastQC.R1$Sample,rawFastQC.R1["avg_sequence_length"])
 
-tmp <- tmp[tmp[,2]<th,]
 if(nrow(tmp)>0){
   rownames(tmp) <- 1:nrow(tmp)
-  colnames(tmp) <- c("Rawsample", "Avg sequence length")
-  #knitr::kable(tmp) %>% kable_styling
-  datatable(tmp)
+  colnames(tmp) <- c("Sample", "Avg sequence length")
+  
+  datatable(tmp, extensions = 'Buttons',
+            options = list(dom = 'Blfrtip',
+                           buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+                           lengthMenu = list(c(10,25,50,-1),
+                                             c(10,25,50,"All"))))
 }
 ```
 
@@ -316,6 +326,25 @@ if(nrow(tmp)>0){
 ```{r raw data total sequences}
 #par(mar=c(10,5,1,1))
 plotFastQCFeature(rawFastQC.R1, rawFastQC.R2, feature="Total.Sequences", axes=FALSE)
+```
+
+```{r table samples sequence length}
+tmp <- rawFastQC.R1["Total.Sequences"]
+tmp <- mean(as.vector(as.matrix((tmp)))) 
+th <- tmp*0.9
+
+tmp <- cbind(rawFastQC.R1$Sample,rawFastQC.R1["Total.Sequences"])
+
+if(nrow(tmp)>0){
+  rownames(tmp) <- 1:nrow(tmp)
+  colnames(tmp) <- c("Sample", "Total sequences")
+  
+  datatable(tmp, extensions = 'Buttons',
+            options = list(dom = 'Blfrtip',
+                           buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+                           lengthMenu = list(c(10,25,50,-1),
+                                             c(10,25,50,"All"))))
+}
 ```
 
 ### Summary
@@ -813,7 +842,7 @@ out_html <- knitr::kable(table(annotation$gene_biotype), col.names = NULL, "html
 kable_styling(out_html, "striped", position = "left")
 ``` 
 
-Import the featureCOunts quantification
+Import the featureCounts quantification
 
 ```{r}
 fc.files <- list.files(file.path(projFolder, "FeatureCounts", "Annot"), pattern="*.txt$")
@@ -833,6 +862,22 @@ colnames(fc.expr.star) <- sub(".bam", "",colnames(fc.expr.star))
 fc.expression <- as.matrix(fc.expr.star[,-1])
 rownames(fc.expression) <- fc.expr.star[,1]
 ```
+
+```{r export fcexpression}
+# First, create the output folder in case it does not exist
+res_dir <- file.path(projFolder, "RESULTS")
+if (!file.exists(res_dir)) {
+  # Create the directory
+  dir.create(res_dir)
+}
+
+fc_counts <- cbind(rownames(fc.expression), fc.expression)
+colnames(fc_counts) <- c("Feature", colnames(fc.expression))
+
+write.table(fc_counts, file=file.path(res_dir, "fc_counts.tsv"), sep="\t", row.names=FALSE, quote=FALSE)
+
+```
+
 Now get the counts per biotype per sample
 
 ```{r}
