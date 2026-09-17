@@ -1,0 +1,29 @@
+# Execution parameters
+---
+preprocess:
+  fastp:
+    trim_front1: 0
+    trim_tail1: 0
+    trim_front2: 0
+    trim_tail2: 0
+
+align:
+  star:
+    mode: ""                    # set to "meta" for metatranscriptome studies, to run STAR without annotation
+    genomeSAindexNbases: 14
+    overhang: 74
+    limitGenomeGenerateRAM: 300647710720
+    sparseD: 1                  # for large genomes, set this value higher
+    genomeChrBinNbits: 18       # reduce this for larger genomes
+
+assemble:
+  stringtie:
+    tpm: 2
+
+quantify:
+  featurecounts:
+    attributetype: "gene_id"    # RNA-seq: "gene_id"; metagenomics: "ID" (if Snakebite-Holoruminant-MetaG output is used as input)
+    featuretype: "exon"         # "exon", "transcript" or "gene"; metagenomics: "CDS"
+    strandtype: "1"             # "0" unstranded, "1" stranded, "2" reverse stranded
+  rsem:
+    paired: "--paired-end"      # set to "" for single-end reads

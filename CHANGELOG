@@ -1,0 +1,90 @@
+################################################################################
+#####                                                                      #####
+#####                         CHANGELOG                                    #####
+#####                                                                      #####
+################################################################################
+
+Version 1.0.*:
+--------------------------------------------------------------------------------
+1: Complete rewrite onto the Snakebite module/escalation/docker architecture (as used by
+   Snakebite-Holoruminant-MetaG and Snakebite-miRNA): module-per-directory rule layout
+   (workflow/rules/<module>/{__main__,__functions__}.smk + one .smk per tool),
+   config/ split into config.yaml/features.yaml/params.yaml/.docker.yml/escalation.yaml/
+   samples.tsv, per-rule resource escalation via esc()/get_resources() replacing the old
+   bespoke server_config.yaml numbers, results/<module>/<tool>/... output layout replacing
+   the old flat FASTQ//QC//BAM//FeatureCounts//RSEM//Stringtie/ top-level folders, one
+   container image per tool in .docker.yml replacing the pipeline-wide singularity dict, and
+   a profile-based project wrapper replacing the old --cluster-config/--cluster invocation.
+   samples.tsv now holds sample_id/library_id/read1/read2 directly (the redundant
+   "rawsample" concatenated column is gone - build it from sample_id+library_id if needed).
+   Functionally unchanged: same tools, same container image versions, same STAR/fastp/
+   stringtie/featureCounts parameters and flags, same meta/non-meta STAR toggle, same
+   default on/off decontamination (still the same 3 references), RSEM still available
+   on-demand but not part of the default target.
+   Fixes along the way:
+     - decontaminate__star_index__build is now one rule per reference (wildcard-parameterised)
+       instead of one rule bash-looping over every reference and touching a single shared
+       marker file - this was already flagged in this file under "PLANNED UPDATES" below;
+       each reference's index is now tracked independently by Snakemake.
+     - preprocess__concatenate__run now cats the exact files Snakemake already resolved from
+       samples.tsv (input:) instead of re-deriving the same file set via a separate bash glob
+       that could in principle disagree with it (wrong order, or a stray matching file).
+     - align__star__map's metatranscriptome-mode branch no longer declares an output
+       (Aligned.toTranscriptome.out.bam) that mode never produces (STAR only writes it with
+       --quantMode TranscriptomeSAM, which meta-mode doesn't pass) - it's now two separate
+       rule bodies, gated the same way this pipeline already gates decontamination in
+       decontaminate/star.smk, so meta-mode runs no longer end in a missing-output error.
+     - Every STAR invocation now sets --outTmpDir to a rule/sample-local scratch path (and
+       clears it first). Previously STAR fell back to its default ./_STARtmp, which many
+       concurrent STAR jobs sharing one working directory (this pipeline's normal SLURM
+       operating mode, --jobs 300) could collide on; this also means a retried attempt no
+       longer fails immediately on a stale tmp dir left by the previous attempt.
+     - The merged-assembly featureCounts rule's attributetype_merged/featuretype_merged
+       params.yaml keys were dead: the old Snakefile unconditionally overwrote them right
+       after loading config, and the rule's own shell command didn't even reference the
+       resulting params, hardcoding -g transcript_id -t transcript directly instead. Dropped
+       the two dead keys; the rule now hardcodes the same transcript_id/transcript values
+       that actually ran before, with a comment explaining why.
+     - rsem-calculate-expression's -p flag now reads {threads} instead of a hardcoded 20,
+       and it's pointed at a proper output-folder/sample-name prefix instead of writing into
+       the working directory and sweeping everything matching a glob into place afterwards.
+     - The dead `report: "report/workflow.rst"` directive is dropped (pointed at a file that
+       was never part of this repository; neither sibling pipeline uses Snakemake's own
+       `report:` feature either).
+   The final HTML report (workflow-report.Rmd) is unchanged in substance - same analyses, same
+   packages - but moved to workflow/scripts/R/ and its handful of hardcoded old-layout path/
+   schema references (QC/FASTQ/BAM/FeatureCounts folder names, the old rawsample/sample_name
+   samplesheet columns, the contamination-refs config line) were updated to match the new
+   results/ layout and samples.tsv schema.
+
+#### Previously listed here under "PLANNED UPDATES FOR FUTURE VERSIONS", now fixed above:
+* rule build_contamination_indices / decontaminate__star_index__build:
+    - Output file used to be created as soon as one index was created, rather than only once
+      every reference's index had actually finished. Fixed by the per-reference rule split.
+
+0.3.*: UPDATES
+--------------------------------------------------------------------------------
+1: Create now a RESULTS folder and write the fc_counts.tsv object into it from the final report.
+
+0.2 : Release Version
+--------------------------------------------------------------------------------
+
+0.1.*: UPDATES
+--------------------------------------------------------------------------------
+* 17: Added the {wildcards.samples}_Aligned.out.bam output to the rule rule star_map_reads
+* 16: STAR aligned reports now also unsorted SAM files for metatranscriptomics
+* 15: Config options better explained
+* 14: Output file dependencied from STAR alignments for metatranscriptomics further adjusted
+* 13: Adjusted the output files from STAR alignments for metatranscriptomics
+* 12: Added the 'mode' option to account for metagenomic studies
+* 11: Option limitGenomeGenerateRAM added to the STAR genome builder
+* 10: Added the genomeChrBinNbits option to STAR, to account for larger genomes
+* 9: Bugfix, -t option in rule featureCounts_quantify_merged
+* 8: Added to STAR index the parameter genomeSAindexNbases
+* 7: FeatureCounts merged attribute types fixed
+* 6: Bugfix, filenames
+* 5: Attribute type and feature type added for featureCounts
+* 4: Decontamination works now properly
+* 3: Contamination statistics added to the final report
+* 2: Added the decontamination step
+* 1: Inital submission

@@ -1,0 +1,27 @@
+reads__fastqc__run: medium
+reads__multiqc__run: small
+
+reference__star_index__genome: large
+reference__rsem_index__build: large
+
+preprocess__concatenate__run: small
+preprocess__fastp__run: medium
+preprocess__fastqc__concatenated: medium
+preprocess__multiqc__concatenated: small
+preprocess__fastqc__trimmed: medium
+preprocess__multiqc__trimmed: small
+
+decontaminate__star_index__build: large
+decontaminate__star__map: large
+
+align__star__map: large
+
+assemble__stringtie__run: large
+assemble__stringtie__compose_merge: small
+assemble__stringtie__merge: large
+
+quantify__featurecounts__reference: large_nvme
+quantify__featurecounts__stringtie_merged: large_nvme
+quantify__rsem__calculate_expression: large
+
+report__workflow__render: medium

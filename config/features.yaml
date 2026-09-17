@@ -1,0 +1,13 @@
+# Paths to references, relative to project_folder unless absolute
+---
+references:
+  genome: "Reference/Bos_taurus.ARS-UCD1.2.dna.toplevel.fa"
+  annotation: "Reference/Bos_taurus.ARS-UCD1.2.100.gtf"
+
+# Sequential decontamination references (STAR-mapped in map order, each reference's
+# unmapped-mate output feeding the next). Remove all entries (or leave the map empty) to
+# skip decontamination entirely.
+decontamination:
+  GCF_000005845.2_ASM584v2_genomic: "Reference/Contamination/GCF_000005845.2_ASM584v2_genomic.fna"
+  GCF_000013425.1_ASM1342v1_genomic: "Reference/Contamination/GCF_000013425.1_ASM1342v1_genomic.fna"
+  SILVA_138.1_LSURef_tax_silva: "Reference/Contamination/SILVA_138.1_LSURef_tax_silva.fasta"

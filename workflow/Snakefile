@@ -1,0 +1,148 @@
+# Main entrypoint of the workflow.
+# Please follow best practices:
+# https://snakemake.readthedocs.io/en/stable/snakefiles/best_practices.html
+#
+# Invoke via the project wrapper (run_Snakebite-RNAseq.sh), run from the project folder -
+# relative paths in config/ are resolved against the current working directory, not against
+# pipeline_folder.
+
+import pandas as pd
+import yaml
+import os
+import re
+from pathlib import Path
+
+DEBUG = True
+
+
+def get_version_from_changelog(default="XX.XX"):
+    try:
+        # workflow.basedir is the folder containing Snakefile
+        changelog = os.path.abspath(os.path.join(workflow.basedir, "..", "CHANGELOG"))
+
+        with open(changelog) as f:
+            text = f.read()
+
+        # extract major.minor
+        major_minor = re.search(r"Version\s+([0-9]+\.[0-9]+)\.\*:", text)
+        # extract first patch number
+        patch = re.search(r"^\s*([0-9]+):", text, re.MULTILINE)
+
+        if not major_minor or not patch:
+            raise ValueError("Version pattern not found")
+
+        return f"{major_minor.group(1)}.{patch.group(1)}"
+
+    except Exception as e:
+        print(
+            f"[WARN] Could not resolve pipeline version from CHANGELOG "
+            f"({e}); using fallback '{default}'"
+        )
+        return default
+
+
+# set the pipeline version
+version = get_version_from_changelog()
+
+
+def debug(msg):
+    if DEBUG:
+        print(f"[DEBUG] {msg}")
+
+
+debug("Starting workflow setup...")
+debug(f"Workflow version: {version}")
+
+# Load configuration files
+debug("Loading configuration files...")
+
+debug(f"Reading: {config['params-file']}")
+params = yaml.load(open(config["params-file"], "r"), Loader=yaml.SafeLoader)
+
+debug(f"Reading: {config['docker-file']}")
+docker = yaml.load(open(config["docker-file"], "r"), Loader=yaml.SafeLoader)
+
+debug(f"Reading: {config['features-file']}")
+features = yaml.load(open(config["features-file"], "r"), Loader=yaml.SafeLoader)
+
+debug(f"Reading sample metadata: {config['sample-file']}")
+samples = pd.read_table(config["sample-file"], comment="#", dtype="str")
+
+# Process sample information
+debug("Processing sample metadata...")
+
+SAMPLES = samples.sample_id.unique()
+debug(f"Found {len(SAMPLES)} unique samples.")
+
+SAMPLE_LIBRARY = samples[["sample_id", "library_id"]].values.tolist()
+debug(f"Generated sample-library pairs: {len(SAMPLE_LIBRARY)}")
+
+# Sequential decontamination references (order-preserving; empty/missing = decontamination
+# skipped entirely, see decontaminate/__functions__.smk).
+CONTAM_NAMES = [] if not features.get("decontamination") else list(features["decontamination"].keys())
+debug(f"Decontamination references: {CONTAM_NAMES}")
+
+wildcard_constraints:
+    sample_id="|".join(re.escape(s) for s in SAMPLES),
+    library_id="|".join(re.escape(l) for l in samples.library_id.unique()),
+    contam="|".join(re.escape(c) for c in CONTAM_NAMES) if CONTAM_NAMES else ".*",
+
+config["pipeline_folder"] = config["pipeline_folder"].rstrip("/") + "/"
+debug(f"Used pipeline folder: " + config["pipeline_folder"])
+
+WORKFLOW_REPORT_R = os.path.join(config["pipeline_folder"], "workflow/scripts/R/workflow-report.Rmd")
+
+# Import the escalation orders
+with open("config/escalation.yaml") as f:
+    raw = yaml.safe_load(f)
+
+ESCALATION_CONFIG = {k: [x.strip() for x in v.split(",")] for k, v in raw.items()}
+
+# Import subworkflows
+debug("Including subworkflows...")
+
+include: "rules/folders.smk"
+include: "rules/helpers/__main__.smk"
+include: "rules/reads/__main__.smk"
+include: "rules/reference/__main__.smk"
+include: "rules/preprocess/__main__.smk"
+include: "rules/decontaminate/__main__.smk"
+include: "rules/align/__main__.smk"
+include: "rules/assemble/__main__.smk"
+include: "rules/quantify/__main__.smk"
+include: "rules/report/__main__.smk"
+
+debug("Subworkflows included. Ready to run.")
+
+rule all:
+    """Run the entire pipeline"""
+    input:
+        rules.reads.input,
+        rules.reference.input,
+        rules.preprocess.input,
+        rules.decontaminate.input,
+        rules.align.input,
+        rules.assemble.input,
+        rules.quantify.input,
+        rules.report.input,
+
+
+# ------------------------------------------------------------------------------
+# Disable retries for rules without real escalation
+# ------------------------------------------------------------------------------
+
+debug("Adjusting retries based on escalation configuration...")
+
+for r in workflow.rules:
+    try:
+        esc_list = get_escalation_order(r.name)
+
+        if esc_list is None or len(esc_list) <= 1:
+            r.retries = 0
+            debug(f"Rule '{r.name}': retries disabled (no escalation)")
+        else:
+            r.retries = len(esc_list)
+            debug(f"Rule '{r.name}': retries set to {r.retries}")
+
+    except Exception as e:
+        debug(f"Rule '{r.name}': could not determine escalation ({e}); leaving retries unchanged")

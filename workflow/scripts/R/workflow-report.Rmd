@@ -175,14 +175,14 @@ if(file.exists(file.path(projFolder,"workflow.png"))) knitr::include_graphics(fi
 # Basic stats
 
 ```{r get pipeline version}
-pipeSMK <- readLines(file.path(pipelineFolder,"Snakebite-RNAseq.smk"))
+pipeSMK <- readLines(file.path(pipelineFolder,"workflow","Snakefile"))
 pipeVersion <- gsub("##### Version: ","",pipeSMK[grep("##### Version:", pipeSMK)])
 ```
 
 ```{r import sample inforamtion, results="asis"}
 samplesheet <- read.table(samplesheet.file, header=TRUE)
-rawsamples <- unique(samplesheet$rawsample)
-samples <- unique(samplesheet$sample_name)
+rawsamples <- unique(paste(samplesheet$sample_id, samplesheet$library_id, sep = "."))
+samples <- unique(samplesheet$sample_id)
 sampleInfo <- NULL
 numberGroupingInformation <- 0
 groupingNames <- "No grouping information provided"
@@ -218,22 +218,22 @@ After that, the concatenated reads are comapred against the trimmed reads.
 
 ```{r import multiqc data}
 # Import the FastQC/MultiQC output for the RAW data
-rawFastQC.R1 <- read.table(file.path(projFolder,"QC","RAW","multiqc_R1","multiqc_data","multiqc_fastqc.txt"), header=TRUE, sep="\t")
-rawFastQC.R2 <- read.table(file.path(projFolder,"QC","RAW","multiqc_R2","multiqc_data","multiqc_fastqc.txt"), header=TRUE, sep="\t")
-#rawFastQCJSON.R1 <- getFastQCJSON(file.path(projFolder, "QC", "RAW", "multiqc_R1", "multiqc_data", "multiqc_data.json"))
-#rawFastQCJSON.R2 <- getFastQCJSON(file.path(projFolder, "QC", "RAW", "multiqc_R2", "multiqc_data", "multiqc_data.json"))
+rawFastQC.R1 <- read.table(file.path(projFolder,"results", "reads","multiqc_R1","multiqc_data","multiqc_fastqc.txt"), header=TRUE, sep="\t")
+rawFastQC.R2 <- read.table(file.path(projFolder,"results", "reads","multiqc_R2","multiqc_data","multiqc_fastqc.txt"), header=TRUE, sep="\t")
+#rawFastQCJSON.R1 <- getFastQCJSON(file.path(projFolder, "results", "reads", "multiqc_R1", "multiqc_data", "multiqc_data.json"))
+#rawFastQCJSON.R2 <- getFastQCJSON(file.path(projFolder, "results", "reads", "multiqc_R2", "multiqc_data", "multiqc_data.json"))
 
 # Import the FastQC/MultiQC output for the CONCATENATED data
-conFastQC.R1 <- read.table(file.path(projFolder,"QC","CONCATENATED","multiqc_R1","multiqc_data","multiqc_fastqc.txt"), header=TRUE, sep="\t")
-conFastQC.R2 <- read.table(file.path(projFolder,"QC","CONCATENATED","multiqc_R2","multiqc_data","multiqc_fastqc.txt"), header=TRUE, sep="\t")
-conFastQCJSON.R1 <- getFastQCJSON(file.path(projFolder, "QC", "CONCATENATED", "multiqc_R1", "multiqc_data", "multiqc_data.json"))
-conFastQCJSON.R2 <- getFastQCJSON(file.path(projFolder, "QC", "CONCATENATED", "multiqc_R2", "multiqc_data", "multiqc_data.json"))
+conFastQC.R1 <- read.table(file.path(projFolder,"results", "preprocess", "concatenate","multiqc_R1","multiqc_data","multiqc_fastqc.txt"), header=TRUE, sep="\t")
+conFastQC.R2 <- read.table(file.path(projFolder,"results", "preprocess", "concatenate","multiqc_R2","multiqc_data","multiqc_fastqc.txt"), header=TRUE, sep="\t")
+conFastQCJSON.R1 <- getFastQCJSON(file.path(projFolder, "results", "preprocess", "concatenate", "multiqc_R1", "multiqc_data", "multiqc_data.json"))
+conFastQCJSON.R2 <- getFastQCJSON(file.path(projFolder, "results", "preprocess", "concatenate", "multiqc_R2", "multiqc_data", "multiqc_data.json"))
 
 # Import the FastQC/MultiQC output for the TRIMMED data
-trimmedFastQC.R1 <- read.table(file.path(projFolder,"QC","TRIMMED","multiqc_R1","multiqc_data","multiqc_fastqc.txt"), header=TRUE, sep="\t")
-trimmedFastQC.R2 <- read.table(file.path(projFolder,"QC","TRIMMED","multiqc_R2","multiqc_data","multiqc_fastqc.txt"), header=TRUE, sep="\t")
-trimmedFastQCJSON.R1 <- getFastQCJSON(file.path(projFolder, "QC", "TRIMMED", "multiqc_R1", "multiqc_data", "multiqc_data.json"))
-trimmedFastQCJSON.R2 <- getFastQCJSON(file.path(projFolder, "QC", "TRIMMED", "multiqc_R2", "multiqc_data", "multiqc_data.json"))
+trimmedFastQC.R1 <- read.table(file.path(projFolder,"results", "preprocess", "fastp","multiqc_R1","multiqc_data","multiqc_fastqc.txt"), header=TRUE, sep="\t")
+trimmedFastQC.R2 <- read.table(file.path(projFolder,"results", "preprocess", "fastp","multiqc_R2","multiqc_data","multiqc_fastqc.txt"), header=TRUE, sep="\t")
+trimmedFastQCJSON.R1 <- getFastQCJSON(file.path(projFolder, "results", "preprocess", "fastp", "multiqc_R1", "multiqc_data", "multiqc_data.json"))
+trimmedFastQCJSON.R2 <- getFastQCJSON(file.path(projFolder, "results", "preprocess", "fastp", "multiqc_R2", "multiqc_data", "multiqc_data.json"))
 ```
 
 
@@ -349,7 +349,7 @@ if(nrow(tmp)>0){
 
 ### Summary
 ```{r raw data summary stats}
-mqcStats.raw <- read.table(file.path(projFolder,"QC","RAW","multiqc_R1", "multiqc_data", "multiqc_fastqc.txt"), header=TRUE, sep="\t")
+mqcStats.raw <- read.table(file.path(projFolder,"results", "reads","multiqc_R1", "multiqc_data", "multiqc_fastqc.txt"), header=TRUE, sep="\t")
 tmp <- mqcStats.raw[,-c(1:4,7,11:21)]
 
 totalRawSequences <- sum(mqcStats.raw$Total.Sequences)
@@ -468,8 +468,8 @@ rownames(read_origins)[1] <- "raw_reads"
 par(mar=c(5,5,1,1))
 #plotFastQCJSONFeature(conFastQCJSON.R1, conFastQCJSON.R2, feature="perBaseN")
 
-plotMQCFeature(x=file.path(projFolder,"QC","CONCATENATED","multiqc_R1"),
-               y=file.path(projFolder,"QC","CONCATENATED","multiqc_R2"),
+plotMQCFeature(x=file.path(projFolder,"results", "preprocess", "concatenate","multiqc_R1"),
+               y=file.path(projFolder,"results", "preprocess", "concatenate","multiqc_R2"),
                feature="fastqc_per_base_n_content_plot")
 ```
 
@@ -478,14 +478,14 @@ plotMQCFeature(x=file.path(projFolder,"QC","CONCATENATED","multiqc_R1"),
 par(mar=c(5,5,1,1))
 #plotFastQCJSONFeature(conFastQCJSON.R1, conFastQCJSON.R2, feature="sequenceQuality")
 
-plotMQCFeature(x=file.path(projFolder,"QC","CONCATENATED","multiqc_R1"),
-               y=file.path(projFolder,"QC","CONCATENATED","multiqc_R2"),
+plotMQCFeature(x=file.path(projFolder,"results", "preprocess", "concatenate","multiqc_R1"),
+               y=file.path(projFolder,"results", "preprocess", "concatenate","multiqc_R2"),
                feature="fastqc_per_base_sequence_quality_plot")
 ```
 
 ### Summary
 ```{r conc data summary stats}
-mqcStats.conc <- read.table(file.path(projFolder,"QC","CONCATENATED","multiqc_R1", "multiqc_data", "multiqc_fastqc.txt"), header=TRUE, sep="\t")
+mqcStats.conc <- read.table(file.path(projFolder,"results", "preprocess", "concatenate","multiqc_R1", "multiqc_data", "multiqc_fastqc.txt"), header=TRUE, sep="\t")
 tmp <- mqcStats.conc[,-c(1:4,7,11:21)]
 
 totalConcSequences <- sum(mqcStats.conc$Total.Sequences)
@@ -605,8 +605,8 @@ rownames(read_origins)[2] <- "QC_trimmed_reads"
 par(mar=c(5,5,1,1))
 #plotFastQCJSONFeature(conFastQCJSON.R1, conFastQCJSON.R2, feature="perBaseN")
 
-plotMQCFeature(x=file.path(projFolder,"QC","TRIMMED","multiqc_R1"),
-               y=file.path(projFolder,"QC","TRIMMED","multiqc_R2"),
+plotMQCFeature(x=file.path(projFolder,"results", "preprocess", "fastp","multiqc_R1"),
+               y=file.path(projFolder,"results", "preprocess", "fastp","multiqc_R2"),
                feature="fastqc_per_base_n_content_plot")
 ```
 
@@ -615,8 +615,8 @@ plotMQCFeature(x=file.path(projFolder,"QC","TRIMMED","multiqc_R1"),
 par(mar=c(5,5,1,1))
 #plotFastQCJSONFeature(conFastQCJSON.R1, conFastQCJSON.R2, feature="sequenceQuality")
 
-plotMQCFeature(x=file.path(projFolder,"QC","TRIMMED","multiqc_R1"),
-               y=file.path(projFolder,"QC","TRIMMED","multiqc_R2"),
+plotMQCFeature(x=file.path(projFolder,"results", "preprocess", "fastp","multiqc_R1"),
+               y=file.path(projFolder,"results", "preprocess", "fastp","multiqc_R2"),
                feature="fastqc_per_base_sequence_quality_plot")
 ```
 
@@ -628,7 +628,7 @@ THESE COME FROM THE FILES: ./logs/cutadapt*
 
 ### Summary
 ```{r trimmed data summary stats}
-mqcStats.trim <- read.table(file.path(projFolder,"QC","TRIMMED","multiqc_R1", "multiqc_data", "multiqc_fastqc.txt"), header=TRUE, sep="\t")
+mqcStats.trim <- read.table(file.path(projFolder,"results", "preprocess", "fastp","multiqc_R1", "multiqc_data", "multiqc_fastqc.txt"), header=TRUE, sep="\t")
 tmp <- mqcStats.trim[,-c(1:4,7,11:21)]
 
 totalTrimSequences <- sum(mqcStats.trim$Total.Sequences)
@@ -702,8 +702,8 @@ plotFastQCFeature(conFastQC.avg, trimmedFastQC.avg, labels=c("Conc", "Trimmed"),
 par(mar=c(5,5,1,1))
 #plotFastQCJSONFeature(conFastQCJSON.R1, conFastQCJSON.R2, feature="perBaseN")
 
-plotMQCFeature(x=file.path(projFolder,"QC","CONCATENATED","multiqc_R1"),
-               y=file.path(projFolder,"QC","TRIMMED","multiqc_R1"),
+plotMQCFeature(x=file.path(projFolder,"results", "preprocess", "concatenate","multiqc_R1"),
+               y=file.path(projFolder,"results", "preprocess", "fastp","multiqc_R1"),
                feature="fastqc_per_base_n_content_plot")
 ```
 
@@ -712,8 +712,8 @@ plotMQCFeature(x=file.path(projFolder,"QC","CONCATENATED","multiqc_R1"),
 par(mar=c(5,5,1,1))
 #plotFastQCJSONFeature(conFastQCJSON.R1, conFastQCJSON.R2, feature="sequenceQuality")
 
-plotMQCFeature(x=file.path(projFolder,"QC","CONCATENATED","multiqc_R1"),
-               y=file.path(projFolder,"QC","TRIMMED","multiqc_R1"),
+plotMQCFeature(x=file.path(projFolder,"results", "preprocess", "concatenate","multiqc_R1"),
+               y=file.path(projFolder,"results", "preprocess", "fastp","multiqc_R1"),
                feature="fastqc_per_base_sequence_quality_plot")
 ```
 
@@ -721,23 +721,32 @@ plotMQCFeature(x=file.path(projFolder,"QC","CONCATENATED","multiqc_R1"),
 In case decontamination references are provided, the statistics are shown here
 
 ```{r}
-contamination_references <- configFile[grep("^contamination-refs: ", configFile)]
-contamination_references <- gsub("contamination-refs: ", "", contamination_references)
-contamination_references <- gsub('\"', '', contamination_references)
-contamination_references <- gsub("\\[|\\]", "", contamination_references)
-contamination_references <- trimws(strsplit(contamination_references, ",")[[1]])
+# Reference names are the keys of the "decontamination:" map in config/features.yaml, e.g.:
+#   decontamination:
+#     ref_one: "Reference/Contamination/ref_one.fna"
+#     ref_two: "Reference/Contamination/ref_two.fna"
+featuresYAML <- readLines(features_file)
+decon_start <- grep("^decontamination:", featuresYAML)
+contamination_references <- character(0)
+if(length(decon_start) > 0){
+  decon_rest <- featuresYAML[(decon_start[1] + 1):length(featuresYAML)]
+  decon_end <- which(!grepl("^([[:space:]]|#|$)", decon_rest))[1]
+  if(!is.na(decon_end)) decon_rest <- decon_rest[seq_len(decon_end - 1)]
+  decon_rest <- decon_rest[grepl("^[[:space:]]+[^#[:space:]]", decon_rest)]
+  contamination_references <- trimws(sub(":.*$", "", decon_rest))
+}
 
 ifelse(length(contamination_references)>0, decontamination_active <- TRUE,  decontamination_active <- FALSE)
 ```
 ```{r}
 if(decontamination_active){
-  decon.files <- list.files(file.path(projFolder, "FASTQ", "DECONTAMINATED"), pattern="*R1.decontaminated.fastq.wcl")
+  decon.files <- list.files(file.path(projFolder, "results", "decontaminate", "star"), pattern="_R1.wcl$", recursive=TRUE)
   decon.values <- matrix(0, ncol=length(as.vector(as.matrix(samples))), nrow=length(contamination_references))
   colnames(decon.values) <- as.vector(as.matrix(samples))
   rownames(decon.values) <- contamination_references
   for(i in 1:length(contamination_references)){
     for(j in 1:length(samples)){
-      decon.values[i,j] <- read.table(file.path(projFolder, "FASTQ", "DECONTAMINATED", paste0(as.vector(as.matrix(samples))[j],"_",contamination_references[i],"_R1.decontaminated.fastq.wcl")))[1,1]
+      decon.values[i,j] <- read.table(file.path(projFolder, "results", "decontaminate", "star", contamination_references[i], paste0(as.vector(as.matrix(samples))[j],"_R1.wcl")))[1,1]
     }
   }
   decon.values <- decon.values / 4
@@ -845,10 +854,10 @@ kable_styling(out_html, "striped", position = "left")
 Import the featureCounts quantification
 
 ```{r}
-fc.files <- list.files(file.path(projFolder, "FeatureCounts", "Annot"), pattern="*.txt$")
+fc.files <- list.files(file.path(projFolder, "results", "quantify", "featurecounts", "reference"), pattern="*.txt$")
 fc.in <- list()
 for(i in 1:length(fc.files)){
-  fc.in[[i]] <- importFeatureCounts(file.path(projFolder, "FeatureCounts", "Annot", fc.files[i]))
+  fc.in[[i]] <- importFeatureCounts(file.path(projFolder, "results", "quantify", "featurecounts", "reference", fc.files[i]))
 }
 
 fc.expr.star <- merge(fc.in[[1]]$expValues, fc.in[[2]]$expValues, by="Geneid")
@@ -856,7 +865,7 @@ fc.expr.star <- merge(fc.in[[1]]$expValues, fc.in[[2]]$expValues, by="Geneid")
 for(i in 3:length(fc.files)){
   fc.expr.star <- merge(fc.expr.star, fc.in[[i]]$expValues, by="Geneid")
 }
-colnames(fc.expr.star) <- sub(".*?BAM.", "",colnames(fc.expr.star))
+colnames(fc.expr.star) <- sub(".*/", "",colnames(fc.expr.star))
 colnames(fc.expr.star) <- sub(".bam", "",colnames(fc.expr.star))
 
 fc.expression <- as.matrix(fc.expr.star[,-1])

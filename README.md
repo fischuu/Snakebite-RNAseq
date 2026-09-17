@@ -1,49 +1,69 @@
 # Snakebite-RNAseq
-Standard RNA-seq snakemake pipeline.
 
-## Installation
-The test data is not part of this repository and needs to be downloaded separately here:
- 
-```
-wget ...
-```
+A Snakemake pipeline for paired-end bulk RNA-seq: per-lane FastQC, lane concatenation,
+adapter/quality trimming (fastp), optional sequential decontamination against configurable
+reference genomes (STAR), genome+transcriptome alignment (STAR, with a metatranscriptome mode),
+transcript assembly and cross-sample merging (StringTie), gene/transcript quantification
+(featureCounts; RSEM available on demand), and one consolidated HTML report. It runs on HPC
+(SLURM) with every tool delivered as a Singularity/Apptainer container, and follows the same
+module/escalation/docker architecture as
+[Snakebite-Holoruminant-MetaG](https://github.com/fischuu/Snakebite-Holoruminant-MetaG) and
+[Snakebite-miRNA](https://github.com/fischuu/Snakebite-miRNA).
 
-To clone into the pipeline type
+# Installation
 
 ```
 git clone git@github.com:fischuu/Snakebite-RNAseq.git
 ```
-## Usage
-The pipeline is configured in the file `...` with the following required parameters.
 
-In addition, the follwoing must be provided
+Or via HTTPS:
 
-## Preparations:
+```
+git clone https://github.com/fischuu/Snakebite-RNAseq.git
+```
 
-### Create rawsamples files
+Test data is not part of this repository and needs to be downloaded separately.
 
-### Create samples files
+# Running the pipeline
 
-### Create sampleInfo.txt file
-cut -d'-' -f1 samples > animal
-cut -d'-' -f2 samples > pathogen
-cut -d'-' -f3 samples > time
-cut -d'-' -f4 samples > replicate
-cut -d'-' -f5 samples > sequencer
+Copy `run_Snakebite-RNAseq.sh` into your project folder, point `projectFolder` at your project
+and `pipeline_folder` (in `config/config.yaml`) at this checkout, then run it *from the project
+folder*:
 
+```bash
+bash run_Snakebite-RNAseq.sh                  # full pipeline
+bash run_Snakebite-RNAseq.sh align -np        # dry run of a single module
+```
 
-paste -d'\t' samples animal pathogen time replicate sequencer > sampleList.tmp
+Modules (top-level rules in `rule all`): `reads`, `reference`, `preprocess`, `decontaminate`,
+`align`, `assemble`, `quantify`, `report`. Each module can be run as a whole or as a single tool
+within it using `<module>__<tool>__<action>` naming. Running a submodule automatically triggers
+its upstream dependencies.
 
-rm animal
-rm time
-rm sequencer
-rm pathogen
-rm replicate
+# Included tools
 
-printf "sample\tanimal\tpathogen\ttime\treplicate\tsequencer\n" > header
-cat header sampleList.tmp > sampleInfo.txt
-rm sampleList.tmp
-rm header
+ * STAR
+ * fastp
+ * FastQC / MultiQC
+ * StringTie
+ * subread (featureCounts)
+ * RSEM (available on demand, not part of the default `quantify` target)
+
+# Configuration
+
+ * `config/config.yaml` -- paths to the other config files and the SLURM resource tiers
+   (`resource_sets`).
+ * `config/features.yaml` -- the reference genome/annotation, and the (optional) sequential
+   decontamination references.
+ * `config/params.yaml` -- fastp/STAR/StringTie/featureCounts/RSEM parameters, including the
+   metatranscriptome-mode toggle.
+ * `config/escalation.yaml` -- per-rule resource tier.
+ * `config/samples.tsv` -- sample sheet: `sample_id`, `library_id` (one row per sequencing
+   lane), `read1`, `read2`.
+ * `config/.docker.yml` -- one container image per tool.
+ * `config/profiles/<cluster>/config.yaml` -- SLURM executor profile; copy `Puhti/` for a new
+   cluster.
 
 # Current status
-Under development and possible not yet stable for production
+
+Under development and possibly not yet stable for production.

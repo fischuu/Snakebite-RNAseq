@@ -1,0 +1,9 @@
+executor: slurm
+jobs: 100
+default-resources:
+    runtime: 30
+    mem_mb: 16000
+    cpus_per_task: 1
+    slurm_partition: "small"
+    slurm_account: "project_2002561"
+    gres: "'nvme:0'"

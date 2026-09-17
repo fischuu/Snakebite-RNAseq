@@ -1,0 +1,11 @@
+# Paths to used docker containers, the defaults should be correct for most of the users and should
+# only need adjustments in expert usage situations.
+---
+fastp: "docker://fischuu/fastp:0.20.1"
+star: "docker://fischuu/star:2.7.5a"
+rsem: "docker://fischuu/rsem:1.3.3"
+stringtie: "docker://fischuu/stringtie:2.1.2"
+fastqc: "docker://singlecellpipeline/fastqc:v0.0.2"
+multiqc: "docker://ewels/multiqc:1.9"
+subread: "docker://biocontainers/subread:v1.6.3dfsg-1-deb_cv1"
+r_report: "docker://fischuu/r-gbs:3.6.3-0.1"
