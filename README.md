@@ -52,7 +52,8 @@ its upstream dependencies.
 # Configuration
 
  * `config/config.yaml` -- paths to the other config files and the SLURM resource tiers
-   (`resource_sets`).
+   (`resource_sets`). The defaults are for CSC's Roihu. On another system, change them, and the
+   limits in `tests/resources/check_resource_sets.py`, which checks them.
  * `config/features.yaml` -- the reference genome/annotation, and the (optional) sequential
    decontamination references.
  * `config/params.yaml` -- fastp/STAR/StringTie/featureCounts/RSEM parameters, including the
@@ -61,7 +62,7 @@ its upstream dependencies.
  * `config/samples.tsv` -- sample sheet: `sample_id`, `library_id` (one row per sequencing
    lane), `read1`, `read2`.
  * `config/.docker.yml` -- one container image per tool.
- * `config/profiles/<cluster>/config.yaml` -- SLURM executor profile; copy `Puhti/` for a new
+ * `config/profiles/<cluster>/config.yaml` -- SLURM executor profile; copy `Roihu/` for a new
    cluster.
 
 # Current status

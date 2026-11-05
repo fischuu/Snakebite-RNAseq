@@ -10,74 +10,91 @@ docker-file: "config/.docker.yml"
 sample-file: "config/samples.tsv"
 sampleinfo-file: "config/samples.tsv"   # kept as a separate key so the report script can be pointed at a different table if needed
 
-tmp_storage: "$TMP"
-nvme_storage: "$LOCAL_SCRATCH"
+# No rule of this pipeline reads these three settings at the moment.
+# Roihu has its local disk in $TMPDIR in every job. $LOCAL_SCRATCH exists only when it is reserved on a hugemem node
+tmp_storage: "$TMPDIR"
+nvme_storage: "$TMPDIR"
 shm_storage: "/dev/shm"      # If shm is not available, set to a fast disc (same as nvme_storage), if that is not available, point it to a regular disc (like tmp_storage)
 
 #################################
 ##
 ## Server configuration
 
+# The defaults are for CSC's Roihu, checked on 2026-11-05 against
+# https://docs.csc.fi/computing/running/batch-job-partitions/ and tests/resources/check_resource_sets.py
+# checks them. On another system, check all of this first.
+#
+#   small    72 hours, 1 node, up to 384 cores and 1500 GiB, 20 GiB in $TMPDIR. Cores and memory are independent
+#   longrun  10 days,  1 node, up to 192 cores and 1500 GiB, 20 GiB in $TMPDIR. Cores and memory are independent
+#   medium   36 hours, full nodes only, 384 cores and 744 GiB per node, 600 GiB in $TMPDIR
+#   hugemem  36 hours, up to 128 cores and 6037 GiB, with the memory fixed by the cores. No set here uses it
+#
+# A job asks for its local disk with `nvme`, which is the value of --gres. On Roihu, only the hugemem partitions have
+# this, and asking for it elsewhere gives "Requested node configuration is not available". All other jobs get $TMPDIR
+# without asking, so `nvme` stays empty, and the sets with _nvme in their name are the same as those without it.
 resource_sets:
   small:
     runtime: 300
     mem_mb: 16000
     cpus: 1
     partition: "small"
-    nvme: "nvme:0"
+    nvme: ""
 
   medium:
     runtime: 4000
     mem_mb: 160000
     cpus: 10
     partition: "small"
-    nvme: "nvme:0"
+    nvme: ""
 
   medium_nvme:
     runtime: 4000
     mem_mb: 160000
     cpus: 10
     partition: "small"
-    nvme: "nvme:10"
+    nvme: ""
 
   large:
     runtime: 4000
     mem_mb: 320000
     cpus: 20
     partition: "small"
-    nvme: "nvme:0"
+    nvme: ""
 
   large_nvme:
     runtime: 4000
     mem_mb: 320000
     cpus: 20
     partition: "small"
-    nvme: "nvme:50"
+    nvme: ""
 
+  # The nodes of type L have 1536 GiB, and small takes up to 1500 GiB
   highmem:
     runtime: 4000
     mem_mb: 1400000
     cpus: 20
-    partition: "hugemem"
-    nvme: "nvme:250"
+    partition: "small"
+    nvme: ""
 
   longrun:
-    runtime: 20000
+    runtime: 14400
     mem_mb: 320000
     cpus: 20
     partition: "longrun"
-    nvme: "nvme:250"
+    nvme: ""
 
   highmem_longrun:
-    runtime: 20000
+    runtime: 14400
     mem_mb: 1400000
     cpus: 20
-    partition: "hugemem_longrun"
-    nvme: "nvme:250"
+    partition: "longrun"
+    nvme: ""
 
+  # A whole node of the partition medium, which always costs the whole node, so 288 billing units per hour.
+  # No rule of this pipeline uses it by default.
   full_node:
-    runtime: 4000
-    mem_mb: 360000
-    cpus: 40
-    partition: "small"
-    nvme: "nvme:1000"
+    runtime: 2160
+    mem_mb: 740000
+    cpus: 384
+    partition: "medium"
+    nvme: ""

@@ -18,8 +18,9 @@ container.
 
 ## Running the pipeline
 
-There is no build step and no test suite. All "development" happens by editing `.smk` rule
-files and dry-running Snakemake.
+There is no build step, and the only test is `tests/resources/check_resource_sets.py`, which
+checks the resource sets against the published limits of CSC's Roihu. All "development" happens by
+editing `.smk` rule files and dry-running Snakemake.
 
 The pipeline is invoked through the wrapper script, never by calling `snakemake` directly:
 
@@ -72,8 +73,9 @@ Everything a user needs to change lives in `config/`, loaded once at the top of
 - `config/samples.tsv` - sample sheet: `sample_id`, `library_id` (one row per sequencing lane),
   `read1`, `read2`.
 - `config/.docker.yml` - one container image per tool.
-- `config/profiles/<cluster>/config.yaml` - SLURM executor profile; copy `Puhti/` for a new
-  cluster.
+- `config/profiles/<cluster>/config.yaml` - SLURM executor profile; copy `Roihu/` for a new
+  cluster. The default `resource_sets` are for CSC's Roihu, where `--gres=nvme` exists only on
+  hugemem, so `nvme` stays empty and the local disk is `$TMPDIR`.
 
 `workflow/Snakefile` parses `samples.tsv` into `SAMPLES` (unique `sample_id`s) and
 `SAMPLE_LIBRARY` (`(sample_id, library_id)` pairs), and `features["decontamination"]` into
@@ -139,6 +141,12 @@ hardcoding `resources:`/`threads:`. `retries:` on each rule is
 sets `--outTmpDir` to a rule/sample-local scratch path (cleared before each attempt) so retries
 under SLURM's normal high-parallelism (`--jobs 300`) don't collide on or get blocked by a stale
 temp dir.
+
+### Temporary storage
+
+No rule reads `tmp_storage`, `nvme_storage` or `shm_storage` at the moment, and `PROJECT_TMP` in
+`folders.smk` isn't used either. STAR's `--outTmpDir` and featureCounts' temporary files are next
+to their results, so no rule depends on the size of `$TMPDIR` (20 GiB in Roihu's `small`).
 
 ### RSEM stays opt-in
 
