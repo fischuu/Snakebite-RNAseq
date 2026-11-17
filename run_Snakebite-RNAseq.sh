@@ -16,8 +16,9 @@ Profile=$projectFolder/config/profiles/Roihu
 # module system, but other systems might have it available per standard installation.
 # In that case you can comment out the following lines
 ################################################################################
-module load bio-apps/v202603
-module load snakemake/9.14.0
+# On CSC's Roihu. Don't use snakemake/9.14.0 there: versions 9.14.0 to 9.14.4 stop every SLURM job with
+# "assert self.workflow.is_main_process" (Snakemake issue 3853, fixed in 9.14.5).
+module load snakemake/9.27.1
 
 # For use with Apptainer, set these variables
 ################################################################################

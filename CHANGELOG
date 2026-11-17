@@ -11,8 +11,9 @@ Version 1.0.*:
    project has its own copy of these files, and an update of the pipeline doesn't touch them, so
    change them there. In config/config.yaml, take over tmp_storage, nvme_storage and the whole
    block resource_sets. In your profile, remove the line with gres. In your run script, load
-   Snakemake with "module load bio-apps/v202603" and "module load snakemake/9.14.0", or keep
-   yours if it works.
+   Snakemake with "module load snakemake/9.27.1". Not 9.14.0 to 9.14.4, which stop every SLURM
+   job with "assert self.workflow.is_main_process" (Snakemake issue 3853), as MetaG found on
+   Roihu.
    No set asks for --gres=nvme anymore, which on Roihu only exists on the hugemem nodes. Time
    limits fit the partitions, highmem runs on the large nodes of small, and full_node is a whole
    node of medium, which no rule uses by default. The local disk is $TMPDIR, as CSC asks, because
