@@ -22,7 +22,6 @@ rule reference__rsem_index__build:
         slurm_partition=esc("partition", "reference__rsem_index__build"),
         gres=lambda wc, attempt: f"{get_resources(wc, attempt, 'reference__rsem_index__build')['nvme']}",
         attempt=get_attempt,
-    retries: len(get_escalation_order("reference__rsem_index__build"))
     container:
         docker["rsem"]
     shell:

@@ -25,7 +25,6 @@ if params["align"]["star"]["mode"] == "meta":
             slurm_partition=esc("partition", "align__star__map"),
             gres=lambda wc, attempt: f"{get_resources(wc, attempt, 'align__star__map')['nvme']}",
             attempt=get_attempt,
-        retries: len(get_escalation_order("align__star__map"))
         container:
             docker["star"]
         shell:
@@ -73,7 +72,6 @@ else:
             slurm_partition=esc("partition", "align__star__map"),
             gres=lambda wc, attempt: f"{get_resources(wc, attempt, 'align__star__map')['nvme']}",
             attempt=get_attempt,
-        retries: len(get_escalation_order("align__star__map"))
         container:
             docker["star"]
         shell:

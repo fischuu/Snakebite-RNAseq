@@ -21,7 +21,6 @@ rule quantify__featurecounts__reference:
         slurm_partition=esc("partition", "quantify__featurecounts__reference"),
         gres=lambda wc, attempt: f"{get_resources(wc, attempt, 'quantify__featurecounts__reference')['nvme']}",
         attempt=get_attempt,
-    retries: len(get_escalation_order("quantify__featurecounts__reference"))
     container:
         docker["subread"]
     shell:
@@ -57,7 +56,6 @@ rule quantify__featurecounts__stringtie_merged:
         slurm_partition=esc("partition", "quantify__featurecounts__stringtie_merged"),
         gres=lambda wc, attempt: f"{get_resources(wc, attempt, 'quantify__featurecounts__stringtie_merged')['nvme']}",
         attempt=get_attempt,
-    retries: len(get_escalation_order("quantify__featurecounts__stringtie_merged"))
     container:
         docker["subread"]
     shell:

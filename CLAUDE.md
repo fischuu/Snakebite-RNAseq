@@ -18,9 +18,9 @@ container.
 
 ## Running the pipeline
 
-There is no build step, and the only test is `tests/resources/check_resource_sets.py`, which
-checks the resource sets against the published limits of CSC's Roihu. All "development" happens by
-editing `.smk` rule files and dry-running Snakemake.
+There is no build step. All "development" happens by editing `.smk` rule files and dry-running
+Snakemake. The tests are in `tests/`, see `tests/README.md`: one checks the resource sets against
+the published limits of CSC's Roihu, the other the escalation on a SLURM cluster in Docker.
 
 The pipeline is invoked through the wrapper script, never by calling `snakemake` directly:
 
@@ -135,9 +135,13 @@ runs don't hit a parse-time `AttributeError` even when RSEM is never actually re
 
 Identical mechanism to the sibling pipelines: every rule uses `esc(key, rule_name)` /
 `esc_val(key, rule_name)` (from `workflow/rules/helpers/__functions__.smk`) instead of
-hardcoding `resources:`/`threads:`. `retries:` on each rule is
-`len(get_escalation_order(rule_name))`, and a loop at the bottom of `workflow/Snakefile` forces
-`r.retries = 0` for any rule whose escalation list has <=1 entry. Every STAR rule additionally
+hardcoding `resources:`/`threads:`. Retries are set in one place only, the loop at the bottom of
+`workflow/Snakefile`: one attempt per resource set, so a rule with a single entry in
+`escalation.yaml` isn't retried. Don't put `retries:` on a rule. A SLURM job runs its own
+Snakemake on the same Snakefile, and with a rule-level `retries:` that inner Snakemake can rerun a
+failed command inside the same job, with the numbers of a resource set the job doesn't have.
+That's why the loop sets `restart_times` to 0 when `workflow.remote_exec` is true.
+`tests/escalation/run_test.sh` tests this on real SLURM. Every STAR rule additionally
 sets `--outTmpDir` to a rule/sample-local scratch path (cleared before each attempt) so retries
 under SLURM's normal high-parallelism (`--jobs 300`) don't collide on or get blocked by a stale
 temp dir.

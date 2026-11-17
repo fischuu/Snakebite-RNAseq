@@ -17,7 +17,6 @@ rule assemble__stringtie__run:
         slurm_partition=esc("partition", "assemble__stringtie__run"),
         gres=lambda wc, attempt: f"{get_resources(wc, attempt, 'assemble__stringtie__run')['nvme']}",
         attempt=get_attempt,
-    retries: len(get_escalation_order("assemble__stringtie__run"))
     container:
         docker["stringtie"]
     shell:
@@ -47,7 +46,6 @@ rule assemble__stringtie__compose_merge:
         slurm_partition=esc("partition", "assemble__stringtie__compose_merge"),
         gres=lambda wc, attempt: f"{get_resources(wc, attempt, 'assemble__stringtie__compose_merge')['nvme']}",
         attempt=get_attempt,
-    retries: len(get_escalation_order("assemble__stringtie__compose_merge"))
     shell:
         """
         exec > {log} 2>&1
@@ -75,7 +73,6 @@ rule assemble__stringtie__merge:
         slurm_partition=esc("partition", "assemble__stringtie__merge"),
         gres=lambda wc, attempt: f"{get_resources(wc, attempt, 'assemble__stringtie__merge')['nvme']}",
         attempt=get_attempt,
-    retries: len(get_escalation_order("assemble__stringtie__merge"))
     container:
         docker["stringtie"]
     shell:

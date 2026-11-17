@@ -20,7 +20,6 @@ rule decontaminate__star_index__build:
         slurm_partition=esc("partition", "decontaminate__star_index__build"),
         gres=lambda wc, attempt: f"{get_resources(wc, attempt, 'decontaminate__star_index__build')['nvme']}",
         attempt=get_attempt,
-    retries: len(get_escalation_order("decontaminate__star_index__build"))
     container:
         docker["star"]
     shell:
@@ -64,7 +63,6 @@ rule decontaminate__star__map:
         slurm_partition=esc("partition", "decontaminate__star__map"),
         gres=lambda wc, attempt: f"{get_resources(wc, attempt, 'decontaminate__star__map')['nvme']}",
         attempt=get_attempt,
-    retries: len(get_escalation_order("decontaminate__star__map"))
     container:
         docker["star"]
     shell:

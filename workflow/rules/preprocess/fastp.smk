@@ -23,7 +23,6 @@ rule preprocess__fastp__run:
         slurm_partition=esc("partition", "preprocess__fastp__run"),
         gres=lambda wc, attempt: f"{get_resources(wc, attempt, 'preprocess__fastp__run')['nvme']}",
         attempt=get_attempt,
-    retries: len(get_escalation_order("preprocess__fastp__run"))
     container:
         docker["fastp"]
     shell:

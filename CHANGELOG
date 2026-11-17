@@ -6,6 +6,14 @@
 
 Version 1.0.*:
 --------------------------------------------------------------------------------
+4: Fixed the resource escalation: every resource set of a rule gets one attempt now, and the last
+   one isn't repeated. Before, each rule got one attempt more than it has resource sets, so a
+   failed job ran again with the same resources, and a rule with a single resource set, which
+   is most of them here, ran twice before the pipeline stopped. The loop at the end of
+   workflow/Snakefile that should have prevented this set an attribute that Snakemake doesn't
+   read. Retries are set only there now, instead of in each rule, and never inside a SLURM job,
+   as in Snakebite-Holoruminant-MetaG since 0.4.68.
+   New test: tests/escalation/run_test.sh, on a SLURM cluster in Docker.
 3: The defaults are for CSC's Roihu now, as Puhti and Mahti were retired on 15 October 2026. On
    Puhti's values, jobs stopped with "Requested node configuration is not available". Your
    project has its own copy of these files, and an update of the pipeline doesn't touch them, so

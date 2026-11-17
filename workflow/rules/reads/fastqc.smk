@@ -22,7 +22,6 @@ rule reads__fastqc__run:
         slurm_partition=esc("partition", "reads__fastqc__run"),
         gres=lambda wc, attempt: f"{get_resources(wc, attempt, 'reads__fastqc__run')['nvme']}",
         attempt=get_attempt,
-    retries: len(get_escalation_order("reads__fastqc__run"))
     container:
         docker["fastqc"]
     shell:
@@ -66,7 +65,6 @@ rule reads__multiqc__run:
         slurm_partition=esc("partition", "reads__multiqc__run"),
         gres=lambda wc, attempt: f"{get_resources(wc, attempt, 'reads__multiqc__run')['nvme']}",
         attempt=get_attempt,
-    retries: len(get_escalation_order("reads__multiqc__run"))
     container:
         docker["multiqc"]
     shell:

@@ -18,7 +18,6 @@ rule preprocess__concatenate__run:
         slurm_partition=esc("partition", "preprocess__concatenate__run"),
         gres=lambda wc, attempt: f"{get_resources(wc, attempt, 'preprocess__concatenate__run')['nvme']}",
         attempt=get_attempt,
-    retries: len(get_escalation_order("preprocess__concatenate__run"))
     shell:
         """
         exec > {log} 2>&1

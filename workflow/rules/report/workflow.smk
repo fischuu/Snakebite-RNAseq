@@ -29,7 +29,6 @@ rule report__workflow__render:
         slurm_partition=esc("partition", "report__workflow__render"),
         gres=lambda wc, attempt: f"{get_resources(wc, attempt, 'report__workflow__render')['nvme']}",
         attempt=get_attempt,
-    retries: len(get_escalation_order("report__workflow__render"))
     container:
         docker["r_report"]
     shell:

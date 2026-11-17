@@ -26,7 +26,6 @@ rule reference__star_index__genome:
         slurm_partition=esc("partition", "reference__star_index__genome"),
         gres=lambda wc, attempt: f"{get_resources(wc, attempt, 'reference__star_index__genome')['nvme']}",
         attempt=get_attempt,
-    retries: len(get_escalation_order("reference__star_index__genome"))
     container:
         docker["star"]
     shell:

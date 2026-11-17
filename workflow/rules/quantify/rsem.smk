@@ -29,7 +29,6 @@ rule quantify__rsem__calculate_expression:
         slurm_partition=esc("partition", "quantify__rsem__calculate_expression"),
         gres=lambda wc, attempt: f"{get_resources(wc, attempt, 'quantify__rsem__calculate_expression')['nvme']}",
         attempt=get_attempt,
-    retries: len(get_escalation_order("quantify__rsem__calculate_expression"))
     container:
         docker["rsem"]
     shell:
